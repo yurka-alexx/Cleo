@@ -1,0 +1,16 @@
+# Niemals Credentials oder generierte server.py mit Passwörtern committen
+server_configured.py
+*_configured.py
+.env
+*.env
+secrets.json
+
+# macOS
+.DS_Store
+__MACOSX/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
