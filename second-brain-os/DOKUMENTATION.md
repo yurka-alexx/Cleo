@@ -151,6 +151,11 @@ Die SKILL.md-Dateien sind plain-text Markdown — vollständig einsehbar, editie
 4. **Entwürfe erstellen** (✅ ANTWORTEN): Ton professionell, im Stil der Firma
 5. **Brief-Vorschläge** (✉️ BRIEF): Briefinhalt vorbereiten, Nutzer bestätigt → OB24-Versand
 6. **Zusammenfassung**: Tabelle aller bearbeiteten Mails + Brief-Vorschlagsblock (falls vorhanden)
+7. **Mini-CRM automatisch aktualisieren** (Schritt 7 — immer, kein manueller crm-sync nötig):
+   - Neue Absender werden direkt eingetragen (Name, Firma, Rolle, Datum, Kontext)
+   - Bestehende Kontakte: „Letzter Kontakt" aktualisiert, Notizen bei neuem Kontext ergänzt
+   - Signaturblöcke werden ausgewertet: Telefon, Adresse, Titel fließen als Notizen ein
+   - Abschluss: `📇 Mini-CRM aktualisiert: +X neu · ↻Y aktualisiert · ✎Z angereichert`
 
 #### Spam-Erkennung (konservativ)
 
@@ -196,7 +201,13 @@ Das System erkennt Spam anhand folgender Signale, handelt aber im Zweifelsfall a
 6. **Kalendertermine anlegen** (bei Level 3): Follow-up-Termine aus vereinbarten Terminen
 7. **E-Mail-Entwürfe** (bei Level 2+): Meeting-Zusammenfassung an Kunden
 8. **Brief-Empfehlung** (immer): Erkennt ob ein formelles Schreiben nach dem Gespräch sinnvoller ist
-9. **Tagesübersicht**: Tabelle mit Gespräch | Typ | Pocket | To-Dos | Termin | Entwurf | Brief
+9. **Mini-CRM automatisch aktualisieren** (Schritt 7 — immer, auf Basis aller Gespräche des Tages):
+   - Neue Gesprächspartner aus Kalender + Pocket-Transkript werden direkt eingetragen
+   - Bestehende Kontakte: „Letzter Kontakt" aktualisiert, Gesprächskontext als Notiz ergänzt
+   - Beziehungstiefe aus Transkript: Angebot besprochen, Abschluss erzielt, offene Punkte, Interessensignale
+   - Rollenwechsel / Jobwechsel die im Gespräch erwähnt werden fließen sofort ein
+   - Abschluss: `📇 Mini-CRM aktualisiert: +X neu · ↻Y aktualisiert · ✎Z angereichert`
+10. **Tagesübersicht**: Tabelle mit Gespräch | Typ | Pocket | To-Dos | Termin | Entwurf | Brief
 
 #### Pocket-Integration
 
@@ -273,6 +284,24 @@ Danach wird für jedes Gespräch:
 ```
 
 Das Mini-CRM ist die **Single Source of Truth** für alle Skills. Inbox-Review, Meeting-Review und Brief-Versand lesen Kontaktdaten immer frisch aus dieser Tabelle.
+
+#### Kontinuierliches Lernen
+
+Das Mini-CRM wächst und verbessert sich automatisch mit jeder Interaktion — **ohne manuellen crm-sync-Aufruf**:
+
+| Quelle | Was wird gelernt |
+|---|---|
+| Inbox-Review (täglich) | Neue Absender, Letzter Kontakt, Telefon/Adresse aus Signaturen, Rollenzuordnung |
+| Meeting-Review (täglich) | Neue Gesprächspartner, Gesprächskontext, Angebote/Abschlüsse, Jobwechsel |
+| CRM-Sync (initial + auf Abruf) | Initialbefüllung aus 180 Tagen Postfach, Abgleich mit externem CRM |
+
+Nach jedem Review wird eine Zusammenfassung der CRM-Änderungen ausgegeben:
+```
+📇 Mini-CRM aktualisiert:
+  + [X] neue Kontakte eingetragen
+  ↻ [Y] bestehende Kontakte aktualisiert
+  ✎ [Z] Kontakte mit neuen Infos angereichert
+```
 
 ---
 
@@ -610,6 +639,12 @@ Weitere Informationen: [www.bafa.de](https://www.bafa.de) | Programm: Förderung
 ---
 
 ## 13. Changelog
+
+### v1.3.1 — April 2026
+- **NEU**: Kontinuierliches CRM-Lernen — inbox-review und meeting-review aktualisieren das Mini-CRM automatisch nach jedem Durchlauf (Schritt 7 in beiden Skills)
+  - Neue Kontakte werden direkt eingetragen, kein manueller crm-sync mehr nötig
+  - Signaturblöcke (Telefon, Adresse, Titel) werden aus E-Mails extrahiert
+  - Meeting-Transkripte liefern Beziehungskontext (Angebote, Abschlüsse, Rollenwechsel)
 
 ### v1.3.0 — April 2026
 - **NEU**: Assistenz-Identität — Name & Geschlecht in Installationsflow (Phase 0.2.5)
