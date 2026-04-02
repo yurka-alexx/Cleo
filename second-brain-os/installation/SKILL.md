@@ -413,7 +413,7 @@ Fallarchiv/
 
 ## MEMORY SYSTEM
 MEMORY.md zu Beginn jeder Session lesen.
-Neue Fälle und wichtige Erkenntnisse auf Yuris Anweisung eintragen.
+Neue Fälle und wichtige Erkenntnisse nur auf explizite Anweisung des Nutzers eintragen.
 ```
 
 ---
@@ -462,7 +462,7 @@ Mini-CRM-Tabelle in `Sekretariat/CLAUDE.md` befüllen:
 | [Name] | [Firma] | [E-Mail] | [Kunde/Lieferant/Sonstiges] | [Datum] | [Kontext] |
 ```
 
-Yuri / Kunden nach Rollenklassifizierung fragen wenn unklar.
+Den Nutzer nach Rollenklassifizierung fragen wenn unklar.
 
 ---
 
@@ -502,7 +502,7 @@ Erstelle `ÜBERGABE.md` im Hauptordner:
 ```markdown
 # Second Brain OS — Übergabe [FIRMENNAME]
 Installiert am: [DATUM]
-Installiert von: Able & Baker GmbH
+Installiert von: {{INSTALLATIONSPARTNER}}
 
 ## Eingerichtete Komponenten
 - E-Mail-System: [EMAIL_SYSTEM] ([EMAIL_ADDRESS])
@@ -520,7 +520,7 @@ Installiert von: Able & Baker GmbH
 [Alle noch ausstehenden Items hier eintragen]
 
 ## Support
-Bei Fragen: Able & Baker GmbH — [KONTAKT]
+Bei Fragen: {{INSTALLATIONSPARTNER}} — {{SUPPORT_KONTAKT}}
 ```
 
 ---

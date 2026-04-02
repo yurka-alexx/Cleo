@@ -33,7 +33,7 @@ Für jeden neuen Kontakt:
 - Letzte E-Mail: Datum + Thema
 - Vorgeschlagene Rolle: Kunde / Lieferant / Sonstiges
 
-Yuri / Nutzer bestätigt oder korrigiert Rolle.
+Der Nutzer bestätigt oder korrigiert die Rolle.
 
 ### Schritt 4 — Mini-CRM aktualisieren
 
