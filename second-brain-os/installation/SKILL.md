@@ -208,6 +208,52 @@ Tabellarische Übersicht aller Mails mit Klassifizierung und ggf. Link zum Entwu
 
 ---
 
+## PHASE 4b — Inbox-Review Zeitplan & Ordner-Logik
+
+### Schritt 4b.1 — Review-Zeitfenster festlegen
+
+Frage mit **AskUserQuestion**:
+
+> „Wie viele Stunden soll der tägliche Inbox-Review abdecken?"
+> - 24 Stunden (empfohlen — ein Review morgens, deckt den Vortag ab)
+> - 48 Stunden
+> - 72 Stunden
+> - Manuell (kein fester Zeitplan)
+
+Wert als `{{INBOX_REVIEW_HOURS}}` in `inbox-review/SKILL.md` eintragen.
+
+### Schritt 4b.2 — Zeitplan einrichten
+
+Frage mit **AskUserQuestion**:
+
+> „Wann soll der Inbox-Review täglich automatisch starten?"
+> - Täglich 08:00 Uhr (empfohlen — Arbeitstag mit klarem Posteingang starten)
+> - Täglich 07:00 Uhr
+> - Täglich abends 18:00 Uhr
+> - Manuell (kein automatischer Start)
+
+Falls automatischer Zeitplan gewählt:
+→ Scheduled Task via `schedule`-Skill anlegen mit Trigger-Prompt:
+  `"Führe den Inbox-Review der letzten {{INBOX_REVIEW_HOURS}} Stunden durch."`
+→ Zeitplan als `{{INBOX_REVIEW_SCHEDULE}}` in `inbox-review/SKILL.md` eintragen.
+
+### Schritt 4b.3 — Ordner-Logik einrichten (optional)
+
+Frage mit **AskUserQuestion**:
+
+> „Soll eine intelligente Ordner-Verschiebe-Logik eingerichtet werden?
+> Claude liest deine bestehende Ordnerstruktur, leitet Sortierregeln ab und
+> verschiebt eingehende Mails automatisch in die richtigen Ordner."
+> - Ja, einrichten
+> - Nein, überspringen
+
+Falls Ja:
+- `inbox-review/ordner-logik/SKILL.md` aus Template anlegen
+- In `inbox-review/SKILL.md`: `ORDNER_LOGIK = true` setzen
+- Hinweis: Setup-Lauf beim ersten Review-Aufruf — Ordner werden dann live erkannt
+
+---
+
 ## PHASE 5 — Meeting-Review (optional)
 
 ### Schritt 5.1 — Abfragen ob gewünscht
@@ -466,36 +512,101 @@ Den Nutzer nach Rollenklassifizierung fragen wenn unklar.
 
 ---
 
-## PHASE 10 — Abschluss & Verifikation
+## PHASE 10 — Abschluss & Vollständiger Funktionstest
 
-### Schritt 10.1 — Checkliste abarbeiten
+### Schritt 10.1 — Installations-Checkliste
 
-Prüfe und hake ab:
+Prüfe und hake gemeinsam mit dem Mitarbeiter ab:
 - [ ] Ordnerstruktur vollständig angelegt
 - [ ] Sekretariat/CLAUDE.md ausgefüllt (Firmendaten, Mini-CRM)
 - [ ] E-Mail-System verbunden und getestet
-- [ ] inbox-review-Skill vorhanden
+- [ ] inbox-review-Skill vorhanden + Zeitplan konfiguriert
+- [ ] Ordner-Logik-Skill vorhanden (falls gewählt)
 - [ ] crm-sync-Skill vorhanden
 - [ ] meeting-review-Skill vorhanden (falls gewählt)
-- [ ] brief-versenden-Skill vorhanden (falls gewählt)
+- [ ] brief-versenden-Skill vorhanden (falls gewählt) inkl. build_brief.py
 - [ ] Firmenanwalt/CLAUDE.md erstellt mit Rechtsgebieten
 - [ ] Mini-CRM mit initialen Kontakten befüllt
 - [ ] Post-Requisiten hochgeladen (Logo, Signum) oder als ausstehend markiert
 
-### Schritt 10.2 — Funktionstest
+---
 
-Führe folgende Tests durch:
+### Schritt 10.2 — Funktionstest: E-Mail & CRM
 
-**Test E-Mail:**
-> „Zeig mir die letzten 5 Mails aus dem Posteingang."
+**Test 1 — Posteingang lesen:**
+Mitarbeiter gibt ein:
+> „Zeig mir die letzten 5 Mails aus meinem Posteingang."
 
-**Test CRM:**
-> „Wer sind unsere 3 häufigsten E-Mail-Kontakte?"
+✅ Erwartet: Claude listet 5 Mails mit Absender, Betreff, Datum.
+❌ Fehler → IMAP-Verbindung oder MCP prüfen (Troubleshooting Phase).
 
-**Test Firmenanwalt:**
-> „Ich brauche einen kurzen Überblick über die wichtigsten Rechtsgebiete für [FIRMENNAME]."
+**Test 2 — Inbox-Review:**
+> „Geh durch meinen Posteingang der letzten 24 Stunden."
 
-### Schritt 10.3 — Übergabenotiz erstellen
+✅ Erwartet: Claude klassifiziert Mails, erstellt Entwürfe, verschiebt in Papierkorb (kein permanentes Löschen).
+❌ Fehler → inbox-review/SKILL.md prüfen, E-Mail-System-Variablen verifizieren.
+
+**Test 3 — CRM:**
+> „Wer sind meine 3 häufigsten E-Mail-Kontakte?"
+
+✅ Erwartet: Claude liest Mini-CRM und gibt 3 Namen aus.
+❌ Fehler → Sekretariat/CLAUDE.md öffnen, Mini-CRM-Tabelle prüfen.
+
+---
+
+### Schritt 10.3 — Funktionstest: Brief-Layout & Versand
+
+⚠️ Vor diesem Test: Testmodus in `physischen-brief-versenden/SKILL.md` auf `true` prüfen.
+
+**Test 4 — Brief-PDF generieren:**
+> „Erstelle einen Testbrief an Max Mustermann, Musterstraße 1, 12345 Musterstadt.
+> Inhalt: 'Dies ist ein Testbrief zur Überprüfung des Brieflayouts.'"
+
+✅ Erwartet: Claude generiert ein PDF in `Sekretariat/Postausgang/`, öffnet es zur Prüfung.
+
+Mitarbeiter prüft visuell:
+- [ ] Logo oben rechts vorhanden (falls hochgeladen)
+- [ ] Firmendaten korrekt
+- [ ] Empfängeradresse DIN 5008 korrekt positioniert
+- [ ] Datum rechtsbündig
+- [ ] Betreff fett, korrekt umgebrochen
+- [ ] Ränder ausreichend (links/rechts/unten mind. 57pt)
+- [ ] Grußformel + Signum vorhanden (falls hochgeladen)
+
+**Test 5 — OB24 Preisabfrage:**
+> „Sende den Testbrief als physischen Brief."
+
+✅ Erwartet: Claude ruft erst den Preis ab und zeigt ihn an (z.B. „Der Brief kostet 1,29 €").
+Claude wartet auf Bestätigung — **nicht automatisch senden**.
+❌ Fehler → OB24-Credentials in brief-versenden/SKILL.md prüfen.
+
+**Test 6 — OB24 Versand im Testmodus (nach Bestätigung):**
+Mitarbeiter bestätigt mit „ja".
+
+✅ Erwartet: Claude sendet im Testmodus, gibt Tracking-ID zurück, trägt in log.md ein.
+Eintrag in `Postausgang/log.md` prüfen.
+
+---
+
+### Schritt 10.4 — Funktionstest: Firmenanwalt
+
+**Test 7 — Rechtsgebiete:**
+> „Was sind die wichtigsten Rechtsgebiete für unser Unternehmen?"
+
+✅ Erwartet: Firmenanwalt listet die während Installation erkannten Rechtsgebiete mit Begründung.
+
+**Test 8 — Anwaltsbrief generieren (falls brief-versenden installiert):**
+> „Erstelle einen kurzen Anwaltsbrief an Max Mustermann wegen eines offenen Betrags von 500 €.
+> Lege eine neue Akte an."
+
+✅ Erwartet:
+- Neue Akte in `Team/Firmenanwalt/Fallarchiv/[AKTENZEICHEN]/` angelegt
+- Brief mit Aktenzeichen im Briefkopf generiert
+- Abschluss: „Rechtsabteilung, i.A. der Geschäftsführung · {{FIRMENNAME}}"
+
+---
+
+### Schritt 10.5 — Übergabenotiz erstellen
 
 Erstelle `ÜBERGABE.md` im Hauptordner:
 
