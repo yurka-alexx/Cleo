@@ -217,6 +217,48 @@ Falls `physischen-brief-versenden`-Skill installiert: direkt Brief-Daten bereits
 
 ---
 
+### Schritt 7 — Mini-CRM kontinuierlich aktualisieren
+
+Das Mini-CRM in `Sekretariat/CLAUDE.md` wird nach jedem Meeting-Review automatisch
+aktualisiert — auf Basis aller Gespräche des Tages (Kalender + Pocket).
+
+**7a — Neue Gesprächspartner eintragen:**
+
+Für alle Personen aus heutigen Gesprächen, die noch NICHT im Mini-CRM stehen:
+- Name (aus Kalender-Einladung, Pocket-Transkript oder genanntem Namen)
+- Firma (aus Kalender oder Transkript erschließen)
+- E-Mail (falls in Kalendereinladung oder Transkript vorhanden)
+- Rolle: Kunde / Lieferant / Partner / Interessent / Sonstige
+- Letzter Kontakt: heutiges Datum
+- Notizen: Gesprächsthema + wichtigste Vereinbarung (1–2 Sätze)
+
+**7b — Bestehende Kontakte nach Gespräch anreichern:**
+
+Für alle Gesprächspartner, die bereits im Mini-CRM stehen:
+- „Letzter Kontakt" auf heutiges Datum aktualisieren
+- Notizen ergänzen: wichtigste Vereinbarung oder neuer Kontext aus dem heutigen Gespräch
+- Rolle oder Firma korrigieren falls im Gespräch neue Information erwähnt wurde
+  (z.B. Jobwechsel, neue Abteilung, neue Firma)
+
+**7c — Beziehungstiefe aus Pocket-Transkript ableiten:**
+
+Falls Pocket-Transkript vorhanden: Qualität und Inhalt des Gesprächs für CRM nutzen:
+- Wurde ein konkretes Angebot besprochen? → Notiz: „Angebot besprochen [DATUM]"
+- Wurde ein Abschluss erzielt? → Rolle ggf. auf „Kunde (aktiv)" aktualisieren
+- Gibt es offene Forderungen oder Probleme? → Notiz: „Offene Punkte: [KONTEXT]"
+- Neues Interesse an Produkt/Dienstleistung erkennbar? → Notiz: „Interesse: [THEMA]"
+
+**7d — Zusammenfassung der CRM-Änderungen ausgeben:**
+
+```
+📇 Mini-CRM aktualisiert (Meeting-Review):
+  + [X] neue Kontakte aus heutigen Gesprächen eingetragen
+  ↻ [Y] bestehende Kontakte aktualisiert (letzter Kontakt, Notizen)
+  ✎ [Z] Kontakte mit neuen Gesprächsinfos angereichert
+```
+
+---
+
 ### Abschluss — Tagesübersicht ausgeben
 
 Tabellarische Übersicht am Ende:

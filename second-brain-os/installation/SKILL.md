@@ -208,7 +208,16 @@ Du arbeitest für [ANSPRECHPARTNER].
 - E-Mail-Adresse: [EMAIL_ADDRESS]
 
 ## MINI-CRM — KONTAKTE
-<!-- Wird in Phase 9 aus dem E-Mail-Postfach befüllt -->
+<!--
+  Single Source of Truth für alle Kontaktdaten.
+  Wird initial in Phase 9 aus dem E-Mail-Postfach befüllt.
+  Danach: kontinuierliches Lernen — inbox-review und meeting-review
+  aktualisieren diese Tabelle automatisch nach jedem Durchlauf:
+  - Neue Absender/Gesprächspartner werden eingetragen
+  - Letzter Kontakt wird nach jeder Interaktion aktualisiert
+  - Notizen werden mit Gesprächskontext angereichert
+  - Rollenzuordnung wird korrigiert wenn neue Infos vorliegen
+-->
 | Name | Firma | E-Mail | Rolle | Letzter Kontakt | Notizen |
 |---|---|---|---|---|---|
 

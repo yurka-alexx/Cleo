@@ -202,10 +202,48 @@ werden soll: separaten kurzen Hinweis an `{{BENACHRICHTIGUNGS_EMAIL}}` senden:
 - Betreff: „Morgen-Briefing bereit — [X] Mails, [Y] Entwürfe"
 - Inhalt: Kurzübersicht der wichtigsten Punkte (max. 5 Zeilen)
 
-### Schritt 7 — CRM-Hinweis
+### Schritt 7 — Mini-CRM kontinuierlich aktualisieren
 
-Falls neue Absender erkannt werden, die noch nicht im Mini-CRM stehen:
-> „X neue Kontakte gefunden — soll ich crm-sync ausführen?"
+Das Mini-CRM in `Sekretariat/CLAUDE.md` wird nach jedem Review automatisch aktualisiert —
+kein separater crm-sync-Aufruf nötig. Das System lernt mit jeder verarbeiteten Mail.
+
+**7a — Neue Kontakte eintragen:**
+
+Für jeden Absender, der noch NICHT im Mini-CRM steht und nicht als SPAM klassifiziert wurde:
+- Name (aus E-Mail-Header oder Signatur)
+- Firma (aus Domain oder Signatur)
+- E-Mail-Adresse
+- Rolle (aus Signatur oder Kontext erschließen: Kunde / Lieferant / Partner / Behörde / Sonstige)
+- Letzter Kontakt: heutiges Datum
+- Notizen: Thema der ersten Mail (1 Satz)
+
+Neue Zeile in die Mini-CRM-Tabelle in `Sekretariat/CLAUDE.md` eintragen.
+
+**7b — Bestehende Kontakte anreichern:**
+
+Für jeden Absender, der bereits im Mini-CRM steht:
+- „Letzter Kontakt" auf heutiges Datum aktualisieren
+- Notizen ergänzen falls neue relevante Info vorhanden (Themenwechsel, neue Rolle, neue Adresse)
+- Firma oder Rolle korrigieren falls Signatur neue Information enthält
+
+**7c — Kontaktdaten aus Signaturen extrahieren:**
+
+Beim Lesen von Mails aktiv nach Signaturblöcken suchen:
+- Telefonnummer → in Notizen ergänzen (falls noch nicht vorhanden)
+- Adresse → in Notizen ergänzen
+- Position/Titel → als Rolle verwenden
+- Website → in Notizen ergänzen
+
+**7d — Zusammenfassung der CRM-Änderungen ausgeben:**
+
+```
+📇 Mini-CRM aktualisiert:
+  + [X] neue Kontakte eingetragen
+  ↻ [Y] bestehende Kontakte aktualisiert (letzter Kontakt, Notizen)
+  ✎ [Z] Kontakte mit neuen Signatur-Infos angereichert
+```
+
+Falls keine Änderungen: „📇 Mini-CRM unverändert — keine neuen Kontakte oder Aktualisierungen."
 
 ---
 
