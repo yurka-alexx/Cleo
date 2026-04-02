@@ -31,6 +31,78 @@ Alle Werte für spätere CLAUDE.md-Dateien speichern.
 
 ---
 
+### Schritt 0.3 — Benachrichtigungskontakt festlegen
+
+Frage mit **AskUserQuestion**:
+
+> „Wer soll vom Sekretariat bei täglichen Aufgaben benachrichtigt werden?
+> Das ist die Person, die Morgen-Briefings, Meeting-Zusammenfassungen und
+> wichtige To-Do-Hinweise erhält."
+
+Bitte eingeben:
+- Vorname + Nachname
+- Position im Unternehmen (z.B. Geschäftsführer, Office-Managerin, Assistent)
+- E-Mail-Adresse
+
+Werte speichern:
+- `BENACHRICHTIGUNGS_NAME = [eingabe]`
+- `BENACHRICHTIGUNGS_POSITION = [eingabe]`
+- `BENACHRICHTIGUNGS_EMAIL = [eingabe]`
+
+In `Sekretariat/CLAUDE.md` unter Abschnitt `BENACHRICHTIGUNG` eintragen:
+```markdown
+## BENACHRICHTIGUNG
+Benachrichtigungskontakt: [NAME] ([POSITION])
+E-Mail: [EMAIL]
+→ Morgen-Briefings, Meeting-Zusammenfassungen und To-Do-Hinweise gehen an diese Person.
+```
+
+---
+
+### Schritt 0.4 — Autonomie-Level festlegen
+
+**Dies ist die wichtigste Konfigurationsentscheidung der gesamten Installation.**
+Das gewählte Level bestimmt, wie eigenständig Second Brain OS in allen Modulen handelt.
+
+Erkläre dem Kunden die drei Stufen:
+
+> **Level 1 — Beobachter (Empfehlung für den Start)**
+> Second Brain OS liest, analysiert und fasst zusammen — macht aber nichts eigenständig.
+> → Mails klassifizieren · Meetings zusammenfassen · Infos aufbereiten
+> → Alle Aktionen werden nur vorgeschlagen, du entscheidest selbst.
+>
+> **Level 2 — Assistent**
+> Alles aus Level 1, plus: automatisch Entwürfe erstellen für alle identifizierten Follow-ups.
+> → Antwort-Entwürfe für Mails · Meeting-Zusammenfassungsmails an Kunden als Entwurf
+> → Du überprüfst und sendest, Claude schreibt.
+>
+> **Level 3 — Autopilot (Maximale Zeitersparnis)**
+> Alles aus Level 2, plus: eigenständig handeln ohne Bestätigung.
+> → Folge-Termine im Kalender anlegen · To-Dos in Notion/App anlegen
+> → Benachrichtigungskontakt direkt informieren (Morgen-Briefing, Meeting-Zusammenfassung)
+> → Vollautomatisch im Hintergrund — du bekommst nur das Ergebnis.
+
+Frage mit **AskUserQuestion** (Einfachauswahl):
+> „Welches Autonomie-Level soll Second Brain OS erhalten?"
+> - Level 1 — Beobachter: Nur zusammenfassen, ich entscheide alles selbst
+> - Level 2 — Assistent: Zusammenfassen + E-Mail-Entwürfe automatisch erstellen
+> - Level 3 — Autopilot: Alles automatisch — Termine, To-Dos, Benachrichtigungen
+
+Wert speichern: `AUTONOMIE_LEVEL = [1/2/3]`
+
+Hinweis: Das Level kann jederzeit durch Änderung einer Variable in den jeweiligen SKILL.md-Dateien angepasst werden.
+
+Variablen je nach Level setzen (für alle folgenden Phasen verwenden):
+
+| Variable | Level 1 | Level 2 | Level 3 |
+|---|---|---|---|
+| `AUTO_CREATE_DRAFTS` | false | **true** | true |
+| `AUTO_CREATE_EVENTS` | false | false | **true** |
+| `AUTO_CREATE_TODOS` | false | false | **true** |
+| `AUTO_NOTIFY_CONTACT` | false | false | **true** |
+
+---
+
 ## PHASE 1 — E-Mail-System einrichten
 
 ### Schritt 1.1 — E-Mail-System abfragen
@@ -360,7 +432,40 @@ Wert `{{SUMMARY_EMAIL}} = [adresse]` speichern.
 - Ziel-Channel abfragen.
 - Wert `{{SUMMARY_TEAMS_CHANNEL}} = [channel]` speichern.
 
-### Schritt 5b.2 — Variablen in Skills eintragen
+### Schritt 5b.2 — E-Mail-Zusammenfassungsordner anlegen (falls E-Mail gewählt)
+
+[WENN summary_channel enthält "email:"]:
+
+Automatisch zwei IMAP-Ordner anlegen, in die Zusammenfassungen verschoben werden:
+- **„Morgen-Briefings"** — täglich erstellte Inbox-Review-Zusammenfassungen
+- **„Meeting-Zusammenfassungen"** — Meeting-Review-Ergebnisse
+
+**Ordner anlegen:**
+
+[WENN imap-smtp]:
+Claude versucht, die Ordner direkt über den IMAP-MCP anzulegen.
+Prüfen ob ein Ordner-Erstellungs-Tool verfügbar ist.
+Falls nicht: Kunden anweisen:
+> „Bitte lege in deinem E-Mail-Programm (Outlook, Thunderbird, Webmailer) manuell
+> zwei Ordner an: 'Morgen-Briefings' und 'Meeting-Zusammenfassungen'."
+
+[WENN gmail]:
+Gmail-Labels anlegen (entsprechen Ordnern in Gmail):
+```
+gmail_create_label(name="Morgen-Briefings")
+gmail_create_label(name="Meeting-Zusammenfassungen")
+```
+
+Nach Anlage:
+- In `inbox-review/SKILL.md`: `BRIEFING_FOLDER = "Morgen-Briefings"` eintragen
+- In `meeting-review/SKILL.md`: `SUMMARY_FOLDER = "Meeting-Zusammenfassungen"` eintragen
+- inbox-review verschiebt die versendete Zusammenfassung nach jedem Run in diesen Ordner
+- meeting-review verfährt ebenso
+
+Ziel: Der Benachrichtigungskontakt (aus Schritt 0.3) findet alle Zusammenfassungen
+gebündelt in diesen Ordnern — strukturiert und auf einen Blick auffindbar.
+
+### Schritt 5b.3 — Variablen in Skills eintragen
 
 `{{SUMMARY_CHANNEL}}` in beiden Skills setzen:
 - `Sekretariat/skills/inbox-review/SKILL.md`
@@ -369,66 +474,68 @@ Wert `{{SUMMARY_EMAIL}} = [adresse]` speichern.
 Format: `email:[adresse]` / `slack:[channel]` / `teams:[channel]` / `none`
 Mehrere Kanäle: kommagetrennt, z.B. `email:chef@firma.de,slack:#posteingang`
 
+Zusätzlich `BENACHRICHTIGUNGS_EMAIL` aus Schritt 0.3 als Standard-Empfänger eintragen,
+falls kein abweichender Kanal gewählt wurde.
+
 ---
 
-## PHASE 5c — Autonome Aktionen konfigurieren
+## PHASE 5c — Autonomie-Level in Skills übertragen
 
-Dieser Schritt bestimmt, wie eigenständig Second Brain OS nach Meetings agiert.
+Das Autonomie-Level wurde in Phase 0.4 bereits festgelegt.
+Dieser Schritt überträgt die Variablen in alle relevanten SKILL.md-Dateien.
 
-### Schritt 5c.1 — Gesamtmodus abfragen
+### Schritt 5c.1 — Variablen basierend auf Level eintragen
 
-Frage mit **AskUserQuestion**:
-> „Soll Second Brain OS nach Meetings eigenständig handeln — also automatisch
-> Kalendertermine, To-Dos und E-Mail-Entwürfe anlegen?"
-> - ✅ Ja, alles automatisch (empfohlen — maximale Zeitersparnis)
-> - 🔧 Individuell konfigurieren (ich wähle selbst aus)
-> - ❌ Nein, nur Zusammenfassungen anzeigen (ich entscheide selbst)
+Werte aus `AUTONOMIE_LEVEL` (Schritt 0.4) in die Skills schreiben:
 
-**Falls „Alles automatisch":**
-`{{AUTONOMOUS_ACTIONS}} = true`
-`{{AUTO_CREATE_EVENTS}} = true`
-`{{AUTO_CREATE_TODOS}} = true`
-`{{AUTO_CREATE_DRAFTS}} = true`
-→ Weiter mit Schritt 5c.2.
+**Level 1 — Beobachter:**
+```
+AUTONOMOUS_ACTIONS  = false
+AUTO_CREATE_DRAFTS  = false
+AUTO_CREATE_EVENTS  = false
+AUTO_CREATE_TODOS   = false
+AUTO_NOTIFY_CONTACT = false
+```
 
-**Falls „Nur Zusammenfassungen":**
-`{{AUTONOMOUS_ACTIONS}} = false`
-`{{AUTO_CREATE_EVENTS}} = false`
-`{{AUTO_CREATE_TODOS}} = false`
-`{{AUTO_CREATE_DRAFTS}} = false`
-→ Weiter mit Phase 6.
+**Level 2 — Assistent:**
+```
+AUTONOMOUS_ACTIONS  = true
+AUTO_CREATE_DRAFTS  = true
+AUTO_CREATE_EVENTS  = false
+AUTO_CREATE_TODOS   = false
+AUTO_NOTIFY_CONTACT = false
+```
 
-**Falls „Individuell":** → Schritt 5c.2 durchführen.
+**Level 3 — Autopilot:**
+```
+AUTONOMOUS_ACTIONS  = true
+AUTO_CREATE_DRAFTS  = true
+AUTO_CREATE_EVENTS  = true
+AUTO_CREATE_TODOS   = true
+AUTO_NOTIFY_CONTACT = true
+```
 
-### Schritt 5c.2 — Einzelne Aktionen konfigurieren
+Eintragen in:
+- `Sekretariat/skills/meeting-review/SKILL.md` — alle fünf Variablen
+- `Sekretariat/skills/inbox-review/SKILL.md` — `AUTO_NOTIFY_CONTACT` und `AUTONOMOUS_ACTIONS`
 
-**Frage A — Kalendertermine:**
-> „Soll Second Brain OS Folge-Termine automatisch im Kalender anlegen,
-> wenn im Meeting ein konkretes nächstes Gespräch vereinbart wurde?"
-> - Ja → `{{AUTO_CREATE_EVENTS}} = true`
-> - Nein → `{{AUTO_CREATE_EVENTS}} = false`
+### Schritt 5c.2 — Benachrichtigungskontakt in Skills eintragen
 
-**Frage B — To-Dos:**
-> „Soll Second Brain OS To-Dos und Action Items aus Meetings automatisch
-> anlegen (in Notion oder als Aufgabenliste)?"
-> - Ja → `{{AUTO_CREATE_TODOS}} = true`
-> - Nein → `{{AUTO_CREATE_TODOS}} = false`
+Aus Schritt 0.3 eintragen in beide Skills:
+```
+BENACHRICHTIGUNGS_NAME     = [NAME]
+BENACHRICHTIGUNGS_POSITION = [POSITION]
+BENACHRICHTIGUNGS_EMAIL    = [EMAIL]
+```
 
-**Frage C — E-Mail-Entwürfe:**
-> „Soll Second Brain OS nach Kundengesprächen automatisch eine Zusammenfassungs-
-> Mail an den Kunden als Entwurf anlegen?"
-> - Ja → `{{AUTO_CREATE_DRAFTS}} = true`
-> - Nein → `{{AUTO_CREATE_DRAFTS}} = false`
+### Schritt 5c.3 — Level in Sekretariat/CLAUDE.md dokumentieren
 
-Falls mindestens eine Aktion aktiv: `{{AUTONOMOUS_ACTIONS}} = true`.
-
-### Schritt 5c.3 — Variablen in meeting-review/SKILL.md eintragen
-
-Alle vier Variablen in `Sekretariat/skills/meeting-review/SKILL.md` setzen:
-- `{{AUTONOMOUS_ACTIONS}}`
-- `{{AUTO_CREATE_EVENTS}}`
-- `{{AUTO_CREATE_TODOS}}`
-- `{{AUTO_CREATE_DRAFTS}}`
+```markdown
+## AUTONOMIE-LEVEL
+Level: [1/2/3] — [Beobachter / Assistent / Autopilot]
+Benachrichtigungskontakt: [NAME] ([POSITION]) — [EMAIL]
+→ Level kann jederzeit in den SKILL.md-Dateien geändert werden.
+```
 
 ---
 
@@ -755,7 +862,43 @@ Eintrag in `Postausgang/log.md` prüfen.
 
 ---
 
-### Schritt 10.5 — Übergabenotiz erstellen
+### Schritt 10.5 — Scheduled Tasks anlegen
+
+Jetzt da alle Skills und Zeitpläne konfiguriert sind, Scheduled Tasks einrichten.
+
+Frage mit **AskUserQuestion**:
+> „Sollen die automatischen Zeitpläne jetzt direkt eingerichtet werden?"
+> - Ja, jetzt einrichten (empfohlen)
+> - Nein, ich mache das später manuell
+
+**Falls Ja:**
+
+[WENN Inbox-Review-Zeitplan konfiguriert (aus Phase 4b.2)]:
+Scheduled Task für Inbox-Review anlegen via `schedule`-Skill:
+- Trigger-Zeit: `{{INBOX_REVIEW_SCHEDULE}}` (z.B. täglich 08:00)
+- Prompt: „Führe den Inbox-Review der letzten {{INBOX_REVIEW_HOURS}} Stunden durch.
+  Nutze den Skill unter `Sekretariat/skills/inbox-review/SKILL.md`."
+- Skill-Referenz dynamisch:
+  ```bash
+  SKILL_PATH=$(find /sessions -name "SKILL.md" -path "*/inbox-review/SKILL.md" 2>/dev/null | head -1)
+  ```
+
+[WENN Meeting-Review konfiguriert]:
+Scheduled Task für Meeting-Review anlegen:
+- Trigger-Zeit: täglich 19:00 Uhr (nach Arbeitsende — deckt alle Meetings des Tages ab)
+  Oder: vom Kunden gewünschte Uhrzeit abfragen.
+- Prompt: „Führe den Meeting-Review für den heutigen Tag durch.
+  Nutze den Skill unter `Sekretariat/skills/meeting-review/SKILL.md`."
+- Skill-Referenz dynamisch:
+  ```bash
+  SKILL_PATH=$(find /sessions -name "SKILL.md" -path "*/meeting-review/SKILL.md" 2>/dev/null | head -1)
+  ```
+
+Beide Tasks in ÜBERGABE.md dokumentieren (Zeitplan + manueller Trigger-Befehl).
+
+---
+
+### Schritt 10.6 — Übergabenotiz erstellen
 
 Erstelle `ÜBERGABE.md` im Hauptordner:
 
@@ -767,14 +910,25 @@ Installiert von: {{INSTALLATIONSPARTNER}}
 ## Eingerichtete Komponenten
 - E-Mail-System: [EMAIL_SYSTEM] ([EMAIL_ADDRESS])
 - CRM-System: [CRM_SYSTEM]
-- Meeting-Review: [JA/NEIN]
+- Autonomie-Level: [1/2/3] — [Beobachter / Assistent / Autopilot]
+- Benachrichtigungskontakt: [NAME] ([POSITION]) — [EMAIL]
+- Meeting-Review: [JA/NEIN] | Pocket AI: [JA/NEIN]
 - Briefversand (OB24): [JA/NEIN]
+- E-Mail-Ordner: Morgen-Briefings / Meeting-Zusammenfassungen [JA/NEIN]
+
+## Automatische Zeitpläne
+- Inbox-Review: täglich [UHRZEIT] Uhr
+- Meeting-Review: täglich [UHRZEIT] Uhr
 
 ## Erste Schritte für den Nutzer
 1. Claude Desktop öffnen
 2. Cowork-Ordner auswählen
 3. Sagen: "Zeig mir meine letzten Mails"
 4. Sagen: "Geh durch meinen Posteingang"
+
+## Manueller Aufruf (ohne Zeitplan)
+- Inbox-Review: "Geh durch meinen Posteingang der letzten 24 Stunden"
+- Meeting-Review: "Bereite meine heutigen Meetings nach"
 
 ## Offene Punkte
 [Alle noch ausstehenden Items hier eintragen]

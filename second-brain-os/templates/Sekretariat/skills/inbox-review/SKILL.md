@@ -2,13 +2,18 @@
 # ⚙️ TEMPLATE — wird während Installation mit Kundenvariablen befüllt
 
 Scannt den Posteingang, klassifiziert jede Mail und erstellt Entwürfe für alles,
-was eine Antwort braucht. Zu löschende Mails werden in den Papierkorb verschoben.
+was eine Antwort braucht. Zu löschende und Spam-Mails werden in den Papierkorb
+verschoben (kein permanentes Löschen). Alte Entwürfe (>30 Tage) werden bereinigt.
 
-E-Mail-System:      {{EMAIL_SYSTEM}}
-Firma:              {{FIRMENNAME}}
-Review-Zeitfenster: {{INBOX_REVIEW_HOURS}}h (Standard: 24)
-Zeitplan:           {{INBOX_REVIEW_SCHEDULE}}
-Zusammenfassung an: {{SUMMARY_CHANNEL}}
+E-Mail-System:          {{EMAIL_SYSTEM}}
+Firma:                  {{FIRMENNAME}}
+Review-Zeitfenster:     {{INBOX_REVIEW_HOURS}}h (Standard: 24)
+Zeitplan:               {{INBOX_REVIEW_SCHEDULE}}
+Zusammenfassung an:     {{SUMMARY_CHANNEL}}
+Briefings-Ordner:       {{BRIEFING_FOLDER}}
+Autonomie-Level:        {{AUTONOMOUS_ACTIONS}}
+Benachricht. Kontakt:   {{BENACHRICHTIGUNGS_NAME}} ({{BENACHRICHTIGUNGS_POSITION}}) — {{BENACHRICHTIGUNGS_EMAIL}}
+Kontakt benachricht.:   {{AUTO_NOTIFY_CONTACT}}
 
 ---
 
@@ -53,13 +58,25 @@ Zusätzlich: `gmail_search_messages(query="is:unread newer_than:7d")` für älte
 
 ### Schritt 2 — Jede Mail klassifizieren
 
-| Kategorie | Kriterium |
-|---|---|
-| 🗑️ PAPIERKORB | Spam, Werbung, automatische Benachrichtigungen ohne Relevanz |
-| 📁 ARCHIVIEREN | Informationsmail, erledigt, kein Handlungsbedarf |
-| ✅ ANTWORTEN | Direkte Frage, Auftrag, Anfrage — Entwurf erstellen |
-| 📂 VERSCHIEBEN | Mail gehört in einen bestimmten Ordner (→ Ordner-Logik-Skill) |
-| 👀 BEOBACHTEN | Relevant, aber kein sofortiger Handlungsbedarf |
+| Kategorie | Kriterium | Aktion |
+|---|---|---|
+| 🚫 SPAM | Eindeutige Spam-Merkmale: unbekannte Absender-Domain, Massenversand, verdächtige Links, Phishing-Anzeichen, keine direkte Adressierung | → Papierkorb (nie permanent löschen) |
+| 🗑️ PAPIERKORB | Werbung, Newsleter ohne Mehrwert, automatische System-Benachrichtigungen ohne Relevanz, One-Click-Unsubscribe-Kandidaten | → Papierkorb |
+| 📁 ARCHIVIEREN | Informationsmail, erledigt, kein Handlungsbedarf, Bestätigungen | → Archivieren |
+| ✅ ANTWORTEN | Direkte Frage, Auftrag, Anfrage, Kundenkommunikation — Entwurf erstellen | → Entwurf anlegen |
+| 📂 VERSCHIEBEN | Mail gehört in einen bestimmten Ordner (→ Ordner-Logik-Skill) | → Ordner-Logik |
+| 👀 BEOBACHTEN | Relevant, aber kein sofortiger Handlungsbedarf | → Markieren |
+
+**Spam-Erkennung — Signale:**
+- Absender-Domain nicht im Mini-CRM und völlig unbekannt
+- Betreff enthält typische Spam-Phrasen (Gewinn, Erbschaft, Dringend, Kreditangebot…)
+- Keine persönliche Anrede oder nur generische Ansprache
+- Vollständig bildbasierte Mail ohne Text
+- Viele Links zu unbekannten Domains
+- SPF/DKIM-Fehler (falls vom E-Mail-System gemeldet)
+
+Wichtig: Im Zweifelsfall lieber 👀 BEOBACHTEN als automatisch in Papierkorb — Spam-Filter
+soll konservativ agieren, um keine echten Mails zu verlieren.
 
 ### Schritt 3 — Entwürfe erstellen
 
@@ -76,14 +93,19 @@ Länge: so kurz wie möglich, so ausführlich wie nötig.
 
 ### Schritt 4 — Papierkorb & Archiv
 
-🗑️ PAPIERKORB → Mail in Papierkorb verschieben, NICHT permanent löschen:
+🚫 SPAM und 🗑️ PAPIERKORB → Mail in Papierkorb verschieben, NIEMALS permanent löschen:
 
 [WENN imap-smtp]:
 `delete_mail(uid=UID, folder="INBOX", permanent=False)`
 → verschiebt in FOLDER_TRASH ({{FOLDER_TRASH}}), kein unwiderrufliches Löschen.
+→ Gilt für SPAM und PAPIERKORB gleichermaßen.
 
 [WENN gmail]:
 Label TRASH hinzufügen: `gmail_add_label(message_id=ID, label="TRASH")`
+→ Gilt für SPAM und PAPIERKORB gleichermaßen.
+
+Spam-Mails NIE mit `permanent=True` löschen — der Kunde soll jederzeit
+nachschauen können, falls eine legitime Mail fälschlicherweise als Spam erkannt wurde.
 
 📁 ARCHIVIEREN:
 
@@ -99,7 +121,7 @@ INBOX-Label entfernen (archiviert in All Mail).
 Für alle Mails mit Status 📂 VERSCHIEBEN den Ordner-Logik-Skill aufrufen:
 → `Sekretariat/skills/inbox-review/ordner-logik/SKILL.md`
 
-### Schritt 6 — Zusammenfassung ausgeben & versenden
+### Schritt 6 — Zusammenfassung ausgeben, versenden & ablegen
 
 Tabellarische Übersicht aller bearbeiteten Mails:
 
@@ -108,17 +130,25 @@ Tabellarische Übersicht aller bearbeiteten Mails:
 | ... | ... | ✅ ANTWORTEN | Entwurf erstellt |
 | ... | ... | 📁 ARCHIVIEREN | Archiviert |
 | ... | ... | 🗑️ PAPIERKORB | In Papierkorb |
+| ... | ... | 🚫 SPAM | In Papierkorb |
 
-Kurzfassung: „X Entwürfe erstellt · Y archiviert · Z in Papierkorb"
+Kurzfassung: „X Entwürfe · Y archiviert · Z Papierkorb · W Spam"
 
 Zusammenfassung an `{{SUMMARY_CHANNEL}}` senden:
 
 [WENN summary_channel enthält "email:"]:
 Mailentwurf mit Inbox-Zusammenfassung anlegen:
-- Betreff: „Inbox-Review [DATUM] — [X] Mails bearbeitet"
+- Empfänger: `{{BENACHRICHTIGUNGS_EMAIL}}` (falls nicht anders konfiguriert)
+- Betreff: „Morgen-Briefing [DATUM] — [X] Mails bearbeitet"
 - Inhalt: Tabelle + Entwurfs-Hinweise
-[WENN imap-smtp]: `create_draft(to={{SUMMARY_EMAIL}}, subject=..., text=...)`
-[WENN gmail]: `gmail_create_draft(to={{SUMMARY_EMAIL}}, ...)`
+[WENN imap-smtp]: `create_draft(to={{BENACHRICHTIGUNGS_EMAIL}}, subject=..., text=...)`
+[WENN gmail]: `gmail_create_draft(to={{BENACHRICHTIGUNGS_EMAIL}}, ...)`
+
+Zusammenfassung nach Versand / Erstellung in Ordner ablegen:
+[WENN {{BRIEFING_FOLDER}} gesetzt]:
+→ Erstellten Entwurf/gesendete Mail in Ordner `{{BRIEFING_FOLDER}}` (z.B. "Morgen-Briefings") verschieben:
+[WENN imap-smtp]: `archive_mail(uid=UID, folder="Morgen-Briefings")`
+[WENN gmail]: entsprechendes Label hinzufügen
 
 [WENN summary_channel enthält "slack:"]:
 Slack-Nachricht an `{{SUMMARY_SLACK_CHANNEL}}`:
@@ -126,6 +156,12 @@ Kurz-Zusammenfassung: Anzahl pro Kategorie + Hinweis auf erstellte Entwürfe.
 
 [WENN summary_channel = "none"]:
 Nur in Claude ausgeben, kein Versand.
+
+[WENN AUTO_NOTIFY_CONTACT = true]:
+Falls Benachrichtigungskontakt von Zusammenfassung abweicht oder zusätzlich benachrichtigt
+werden soll: separaten kurzen Hinweis an `{{BENACHRICHTIGUNGS_EMAIL}}` senden:
+- Betreff: „Morgen-Briefing bereit — [X] Mails, [Y] Entwürfe"
+- Inhalt: Kurzübersicht der wichtigsten Punkte (max. 5 Zeilen)
 
 ### Schritt 7 — CRM-Hinweis
 
