@@ -318,10 +318,11 @@ Frage mit **AskUserQuestion**:
 
 Erstelle `Sekretariat/skills/meeting-review/SKILL.md` mit:
 - Kalender-Tool je nach Auswahl (gcal_list_events / Outlook)
-- Pocket-Integration falls aktiviert (search_pocket_conversations_timerange für heute)
+- Pocket-Integration falls aktiviert (search_pocket_conversations_timerange für gesamten Tag)
 - Aufgaben-Erstellung je nach Auswahl (Notion / nur Entwürfe)
 - Zusammenfassungsversand via `{{SUMMARY_CHANNEL}}` (wird in Phase 5b gesetzt)
-- Kernfunktionen: Meetings laden → ggf. Pocket-Transkript → Zusammenfassung → Versand → ggf. Aufgabe
+- Autonome Aktionen je nach Wahl in Phase 5c
+- Kernfunktionen: Meetings laden → alle Pocket-Transkripte des Tages → zuordnen → Zusammenfassung → autonome Folgeaktionen → Versand
 
 Vorlage aus `templates/Sekretariat/skills/meeting-review/SKILL.md` verwenden und mit Kundenvariablen befüllen.
 
@@ -367,6 +368,67 @@ Wert `{{SUMMARY_EMAIL}} = [adresse]` speichern.
 
 Format: `email:[adresse]` / `slack:[channel]` / `teams:[channel]` / `none`
 Mehrere Kanäle: kommagetrennt, z.B. `email:chef@firma.de,slack:#posteingang`
+
+---
+
+## PHASE 5c — Autonome Aktionen konfigurieren
+
+Dieser Schritt bestimmt, wie eigenständig Second Brain OS nach Meetings agiert.
+
+### Schritt 5c.1 — Gesamtmodus abfragen
+
+Frage mit **AskUserQuestion**:
+> „Soll Second Brain OS nach Meetings eigenständig handeln — also automatisch
+> Kalendertermine, To-Dos und E-Mail-Entwürfe anlegen?"
+> - ✅ Ja, alles automatisch (empfohlen — maximale Zeitersparnis)
+> - 🔧 Individuell konfigurieren (ich wähle selbst aus)
+> - ❌ Nein, nur Zusammenfassungen anzeigen (ich entscheide selbst)
+
+**Falls „Alles automatisch":**
+`{{AUTONOMOUS_ACTIONS}} = true`
+`{{AUTO_CREATE_EVENTS}} = true`
+`{{AUTO_CREATE_TODOS}} = true`
+`{{AUTO_CREATE_DRAFTS}} = true`
+→ Weiter mit Schritt 5c.2.
+
+**Falls „Nur Zusammenfassungen":**
+`{{AUTONOMOUS_ACTIONS}} = false`
+`{{AUTO_CREATE_EVENTS}} = false`
+`{{AUTO_CREATE_TODOS}} = false`
+`{{AUTO_CREATE_DRAFTS}} = false`
+→ Weiter mit Phase 6.
+
+**Falls „Individuell":** → Schritt 5c.2 durchführen.
+
+### Schritt 5c.2 — Einzelne Aktionen konfigurieren
+
+**Frage A — Kalendertermine:**
+> „Soll Second Brain OS Folge-Termine automatisch im Kalender anlegen,
+> wenn im Meeting ein konkretes nächstes Gespräch vereinbart wurde?"
+> - Ja → `{{AUTO_CREATE_EVENTS}} = true`
+> - Nein → `{{AUTO_CREATE_EVENTS}} = false`
+
+**Frage B — To-Dos:**
+> „Soll Second Brain OS To-Dos und Action Items aus Meetings automatisch
+> anlegen (in Notion oder als Aufgabenliste)?"
+> - Ja → `{{AUTO_CREATE_TODOS}} = true`
+> - Nein → `{{AUTO_CREATE_TODOS}} = false`
+
+**Frage C — E-Mail-Entwürfe:**
+> „Soll Second Brain OS nach Kundengesprächen automatisch eine Zusammenfassungs-
+> Mail an den Kunden als Entwurf anlegen?"
+> - Ja → `{{AUTO_CREATE_DRAFTS}} = true`
+> - Nein → `{{AUTO_CREATE_DRAFTS}} = false`
+
+Falls mindestens eine Aktion aktiv: `{{AUTONOMOUS_ACTIONS}} = true`.
+
+### Schritt 5c.3 — Variablen in meeting-review/SKILL.md eintragen
+
+Alle vier Variablen in `Sekretariat/skills/meeting-review/SKILL.md` setzen:
+- `{{AUTONOMOUS_ACTIONS}}`
+- `{{AUTO_CREATE_EVENTS}}`
+- `{{AUTO_CREATE_TODOS}}`
+- `{{AUTO_CREATE_DRAFTS}}`
 
 ---
 

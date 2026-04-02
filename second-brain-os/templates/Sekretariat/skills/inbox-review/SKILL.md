@@ -14,6 +14,29 @@ Zusammenfassung an: {{SUMMARY_CHANNEL}}
 
 ## ABLAUF
 
+### Schritt 0 — Alte Entwürfe bereinigen
+
+Vor dem eigentlichen Review den Entwürfe-Ordner aufräumen:
+
+[WENN imap-smtp]:
+```
+search_mails(folder="DRAFTS", since_days=999, older_than_days=30)
+```
+Alle Treffer (Entwürfe die älter als 30 Tage sind) in Papierkorb verschieben:
+`delete_mail(uid=UID, folder="DRAFTS", permanent=False)`
+
+[WENN gmail]:
+```
+gmail_search_messages(query="in:drafts older_than:30d")
+```
+Für jeden Treffer: Gmail TRASH-Label hinzufügen (nicht permanent löschen):
+`gmail_add_label(message_id=ID, label="TRASH")`
+
+Hinweis ausgeben: „🗂️ [N] veraltete Entwürfe (>30 Tage) in den Papierkorb verschoben."
+Falls keine veralteten Entwürfe: „✅ Keine veralteten Entwürfe gefunden."
+
+---
+
 ### Schritt 1 — Posteingang laden
 
 [WENN imap-smtp]:
