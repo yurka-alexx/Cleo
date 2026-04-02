@@ -1,18 +1,29 @@
 # Second Brain OS
 
-Automatisierungsinfrastruktur von Able & Baker — Installationspakete, MCP-Server und Workflow-Tools.
+Automatisierungsinfrastruktur für Claude — Installationspakete, MCP-Server und Workflow-Tools von Able & Baker.
+
+Jedes Paket ist in einem Befehl installierbar. Keine manuellen Konfigurationsschritte.
 
 ---
 
 ## Pakete
 
-| Paket | Beschreibung |
-|---|---|
-| [`imap-smtp-mcp/`](./imap-smtp-mcp/) | MCP-Server für IMAP/SMTP — ermöglicht Claude direkten E-Mail-Zugriff |
+### [`imap-smtp-mcp/`](./imap-smtp-mcp/)
+
+Gibt Claude direkten Zugriff auf ein E-Mail-Postfach via IMAP/SMTP.
+
+**macOS:**
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/yurka-alexx/Second-Brain-OS/main/imap-smtp-mcp/install_mac.sh)
+```
+
+**Windows:**
+```powershell
+irm https://raw.githubusercontent.com/yurka-alexx/Second-Brain-OS/main/imap-smtp-mcp/install_windows.ps1 | iex
+```
 
 ---
 
-## Philosophie
+## Lizenz
 
-Jedes Paket ist selbstständig installierbar — ein Befehl, fertig.
-Keine manuellen Konfigurationsschritte, keine versteckten Abhängigkeiten.
+Internes Tooling — Able & Baker GmbH
