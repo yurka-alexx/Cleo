@@ -31,6 +31,30 @@ Alle Werte für spätere CLAUDE.md-Dateien speichern.
 
 ---
 
+### Schritt 0.2.5 — Assistenz-Identität festlegen
+
+Frage mit **AskUserQuestion**:
+
+> „Wie soll Ihr digitales Sekretariat heißen, und mit welchem Geschlecht soll es angesprochen werden?
+>  Name und Ansprache erscheinen in allen Zusammenfassungen und Benachrichtigungen."
+
+Bitte eingeben:
+- **Geschlecht:** Weiblich / Männlich / Neutral
+- **Name** (z.B. „Clara", „Max", „Alex" — oder leer lassen für „Sekretariat")
+
+Werte speichern:
+- `ASSISTENT_NAME = [eingabe oder "Sekretariat"]`
+- `ASSISTENT_GESCHLECHT = [weiblich/männlich/neutral]`
+
+Identitätssatz je Wahl (für spätere CLAUDE.md-Dateien):
+- Weiblich: `Du bist [NAME], die digitale Assistentin von [FIRMENNAME].`
+- Männlich: `Du bist [NAME], der digitale Assistent von [FIRMENNAME].`
+- Neutral: `Du bist [NAME], das digitale Sekretariat von [FIRMENNAME].`
+
+Hinweis: Der Name erscheint in der Signatur von Morgen-Briefings und Zusammenfassungen.
+
+---
+
 ### Schritt 0.3 — Benachrichtigungskontakt festlegen
 
 Frage mit **AskUserQuestion**:
@@ -173,7 +197,8 @@ Schreibe `Sekretariat/CLAUDE.md` mit folgenden Abschnitten:
 ```markdown
 # Sekretariat — [FIRMENNAME]
 
-Du bist das digitale Sekretariat von [FIRMENNAME]. Du arbeitest für [ANSPRECHPARTNER].
+[IDENTITÄTSSATZ aus Schritt 0.2.5 eintragen]
+Du arbeitest für [ANSPRECHPARTNER].
 
 ## KONTEXT
 - Firma: [FIRMENNAME] ([RECHTSFORM])
@@ -609,11 +634,18 @@ Falls Nein: weiter mit Phase 8.
 
 ### Schritt 7.2 — OB24-Credentials abfragen
 
+> ⚠️ Voraussetzung: Ein OB24-Konto muss **vor der Installation** angelegt werden.
+> Registrierung unter: **https://www.onlinebrief24.de** (kostenlose Registrierung, Pay-per-use)
+> Nach der Registrierung: Login → Mein Konto → API-Zugangsdaten notieren.
+
 Frage nach:
-- OB24 API-Key
-- OB24 Job-ID (Briefprodukt, z.B. Standardbrief SW oder Farbe)
+- OB24 Benutzername (E-Mail-Adresse des OB24-Kontos)
+- OB24 Passwort (OB24-Kontopasswort)
+- OB24 Job-ID (Briefprodukt-ID aus dem OB24-Dashboard, z.B. 1000 für Standardbrief SW)
 - Absenderadresse (Firma, Straße, PLZ, Ort)
-- Testmodus aktivieren? (ja/nein)
+- **Testmodus für Installation aktivieren?** (Empfehlung: Ja — kein echter Versand während der Einrichtung)
+
+Werte speichern: `OB24_USERNAME`, `OB24_PASSWORD`, `OB24_JOB_ID`, `OB24_TEST_MODE = true/false`
 
 ### Schritt 7.3 — Brief-Skill schreiben
 
@@ -837,10 +869,22 @@ Claude wartet auf Bestätigung — **nicht automatisch senden**.
 ❌ Fehler → OB24-Credentials in brief-versenden/SKILL.md prüfen.
 
 **Test 6 — OB24 Versand im Testmodus (nach Bestätigung):**
-Mitarbeiter bestätigt mit „ja".
+Mitarbeiter bestätigt mit „ja, sende im Testmodus".
 
-✅ Erwartet: Claude sendet im Testmodus, gibt Tracking-ID zurück, trägt in log.md ein.
-Eintrag in `Postausgang/log.md` prüfen.
+Vor dem Versand prüfen: Claude zeigt den Testmodus-Status aus dem Skill-Header an:
+> „⚠️ Testmodus aktiv (`OB24_TEST_MODE = true`) — der Brief wird NICHT physisch gedruckt oder versendet.
+>  OB24 bestätigt den Auftrag, stellt aber keine Kosten in Rechnung."
+
+Falls `OB24_TEST_MODE = false` eingetragen ist: Claude fragt explizit nach:
+> „Der Testmodus ist aktuell DEAKTIVIERT. Soll dieser Versand trotzdem als Testversand ausgeführt werden
+>  (einmaliger Test, kein echter Versand), oder soll der Brief wirklich versendet werden?"
+
+✅ Erwartet: Claude sendet im Testmodus, gibt Bestätigung oder Tracking-ID zurück, trägt in log.md ein.
+Eintrag in `Postausgang/log.md` prüfen (Spalte „TEST J/N" muss „J" zeigen).
+
+Nach erfolgreichem Test:
+> „✅ OB24-Testversand erfolgreich. Zum Aktivieren des Livemodus:
+>  In `Sekretariat/skills/physischen-brief-versenden/SKILL.md` `OB24_TEST_MODE` auf `false` setzen."
 
 ---
 

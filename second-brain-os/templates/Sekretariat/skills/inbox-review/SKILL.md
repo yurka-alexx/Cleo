@@ -63,7 +63,8 @@ Zusätzlich: `gmail_search_messages(query="is:unread newer_than:7d")` für älte
 | 🚫 SPAM | Eindeutige Spam-Merkmale: unbekannte Absender-Domain, Massenversand, verdächtige Links, Phishing-Anzeichen, keine direkte Adressierung | → Papierkorb (nie permanent löschen) |
 | 🗑️ PAPIERKORB | Werbung, Newsleter ohne Mehrwert, automatische System-Benachrichtigungen ohne Relevanz, One-Click-Unsubscribe-Kandidaten | → Papierkorb |
 | 📁 ARCHIVIEREN | Informationsmail, erledigt, kein Handlungsbedarf, Bestätigungen | → Archivieren |
-| ✅ ANTWORTEN | Direkte Frage, Auftrag, Anfrage, Kundenkommunikation — Entwurf erstellen | → Entwurf anlegen |
+| ✅ ANTWORTEN | Direkte Frage, Auftrag, Anfrage, Kundenkommunikation — Antwort per E-Mail sinnvoll | → Entwurf anlegen |
+| ✉️ BRIEF | Formelles Schreiben angemessener als E-Mail: Mahnung, Kündigung, Rechtsthemen, Behördenkommunikation, Vertragsangelegenheiten, Situationen wo Schriftform gesetzlich oder dokumentarisch erforderlich | → Brief-Vorschlag erstellen |
 | 📂 VERSCHIEBEN | Mail gehört in einen bestimmten Ordner (→ Ordner-Logik-Skill) | → Ordner-Logik |
 | 👀 BEOBACHTEN | Relevant, aber kein sofortiger Handlungsbedarf | → Markieren |
 
@@ -78,10 +79,11 @@ Zusätzlich: `gmail_search_messages(query="is:unread newer_than:7d")` für älte
 Wichtig: Im Zweifelsfall lieber 👀 BEOBACHTEN als automatisch in Papierkorb — Spam-Filter
 soll konservativ agieren, um keine echten Mails zu verlieren.
 
-### Schritt 3 — Entwürfe erstellen
+### Schritt 3 — Entwürfe und Brief-Vorschläge erstellen
+
+**3a — E-Mail-Entwürfe (Status ✅ ANTWORTEN):**
 
 Für alle Mails mit Status ✅ ANTWORTEN einen Mailentwurf anlegen.
-
 Ton: professionell, freundlich, im Stil von {{FIRMENNAME}}.
 Länge: so kurz wie möglich, so ausführlich wie nötig.
 
@@ -90,6 +92,31 @@ Länge: so kurz wie möglich, so ausführlich wie nötig.
 
 [WENN gmail]:
 `gmail_create_draft(to=ABSENDER, subject="Re: "+BETREFF, body=ENTWURFSTEXT)`
+
+**3b — Brief-Vorschläge (Status ✉️ BRIEF):**
+
+Für alle Mails mit Status ✉️ BRIEF:
+
+1. Briefinhalt vorbereiten:
+   - Empfänger: Name, Firma, Adresse (aus CRM oder Mail-Signatur entnehmen)
+   - Betreff: formell, präzise
+   - Brieftext: professionell, rechtssicher formuliert, DIN 5008-konform
+
+2. In der Zusammenfassung ausgeben:
+   ```
+   ✉️ BRIEF-VORSCHLAG: [BETREFF]
+   An: [EMPFÄNGER, ADRESSE falls bekannt]
+   Inhalt: [2-3 Sätze Zusammenfassung]
+   → Soll ich diesen Brief über OB24 versenden?
+   ```
+
+3. Falls `physischen-brief-versenden`-Skill installiert:
+   → Briefdaten bereitstellen, Nutzer bestätigt → `physischen-brief-versenden`-Skill aufrufen
+   → NICHT automatisch versenden — immer auf explizite Bestätigung warten
+
+4. Falls Brief-Skill nicht installiert:
+   → Briefentwurf als Text ausgeben + Hinweis:
+   `„Brief-Versand via OB24 nicht eingerichtet — Text kann manuell verwendet werden."`
 
 ### Schritt 4 — Papierkorb & Archiv
 
@@ -128,11 +155,23 @@ Tabellarische Übersicht aller bearbeiteten Mails:
 | Absender | Betreff | Klassifizierung | Aktion |
 |---|---|---|---|
 | ... | ... | ✅ ANTWORTEN | Entwurf erstellt |
+| ... | ... | ✉️ BRIEF | Brief-Vorschlag (OB24) |
 | ... | ... | 📁 ARCHIVIEREN | Archiviert |
 | ... | ... | 🗑️ PAPIERKORB | In Papierkorb |
 | ... | ... | 🚫 SPAM | In Papierkorb |
 
-Kurzfassung: „X Entwürfe · Y archiviert · Z Papierkorb · W Spam"
+Falls ✉️ BRIEF-Vorschläge vorhanden: Diese nach der Tabelle separat als Block ausgeben:
+```
+────────────────────────────────────────
+✉️ BRIEF-VORSCHLÄGE (X Briefe)
+────────────────────────────────────────
+1. An: [EMPFÄNGER] | Betreff: [BETREFF]
+   Grund: [Warum physischer Brief empfohlen]
+   → „brief versenden" um Brief via OB24 zu senden
+────────────────────────────────────────
+```
+
+Kurzfassung: „X Entwürfe · Y Briefe · Z archiviert · W Papierkorb · V Spam"
 
 Zusammenfassung an `{{SUMMARY_CHANNEL}}` senden:
 

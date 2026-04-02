@@ -191,16 +191,40 @@ Entwurf anlegen:
 [WENN auto_create_drafts = false]:
 Entwurf nur für KUNDENGESPRÄCHE anlegen (manueller Modus).
 
+**Brief-Vorschläge (unabhängig vom Autonomie-Level):**
+
+Nach der E-Mail-Entwurf-Logik: Prüfen ob in einem der Gespräche ein Thema vorliegt,
+das einen physischen Brief sinnvoller macht als eine E-Mail:
+
+Indikatoren für ✉️ BRIEF-Empfehlung:
+- Vereinbarte Kündigung, Abmahnung oder Vertragsbeendigung
+- Formelle Bestätigung einer Vereinbarung mit rechtlicher Relevanz
+- Mahnung oder Zahlungsaufforderung (nach vorherigen E-Mails ohne Reaktion)
+- Behörden- oder Ämterkommunikation
+- Gesprächspartner ist bekannt dafür, E-Mails zu ignorieren
+
+Falls solche Themen erkannt werden:
+```
+✉️ BRIEF-EMPFEHLUNG (aus Meeting: [TITEL])
+An: [EMPFÄNGER]
+Grund: [Konkrete Begründung, z.B. "Vertragsbestätigung erfordert Schriftform"]
+Entwurf: [2-3 Sätze Briefinhalt-Vorschlag]
+→ „brief versenden" um Brief via OB24 zu senden
+```
+
+Falls `physischen-brief-versenden`-Skill installiert: direkt Brief-Daten bereitstellen.
+→ NICHT automatisch versenden — immer auf explizite Bestätigung warten.
+
 ---
 
 ### Abschluss — Tagesübersicht ausgeben
 
 Tabellarische Übersicht am Ende:
 
-| Gespräch | Typ | Pocket | To-Dos | Termin | Entwurf |
-|---|---|---|---|---|---|
-| [TITEL] | 👤 Kunde | ✅ | 3 angelegt | 1 angelegt | ✅ Entwurf |
-| [TITEL] | 🏢 Intern | ✅ | 2 angelegt | — | — |
-| [TITEL] | 🎤 Ungeplant | ✅ | 1 angelegt | — | ✅ Entwurf |
+| Gespräch | Typ | Pocket | To-Dos | Termin | Entwurf | Brief |
+|---|---|---|---|---|---|---|
+| [TITEL] | 👤 Kunde | ✅ | 3 angelegt | 1 angelegt | ✅ Entwurf | — |
+| [TITEL] | 🏢 Intern | ✅ | 2 angelegt | — | — | — |
+| [TITEL] | 🎤 Ungeplant | ✅ | 1 angelegt | — | ✅ Entwurf | ✉️ Vorschlag |
 
-Kurzzusammenfassung: „X Gespräche · Y To-Dos · Z Termine · W Entwürfe"
+Kurzzusammenfassung: „X Gespräche · Y To-Dos · Z Termine · W Entwürfe · V Briefe"

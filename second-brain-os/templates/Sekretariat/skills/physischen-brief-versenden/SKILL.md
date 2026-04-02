@@ -9,6 +9,13 @@ OB24 Password: {{OB24_PASSWORD}}
 OB24 Job-ID:   {{OB24_JOB_ID}}
 Testmodus:     {{OB24_TEST_MODE}}
 
+> ℹ️ **Testmodus-Steuerung:**
+> - `{{OB24_TEST_MODE}} = true` → alle Versendungen sind Testversendungen (kein echter Druck)
+> - `{{OB24_TEST_MODE}} = false` → Echte Versendungen (kostenpflichtig)
+> - **Einmaliger Testversand:** Nutzer kann pro Aufruf mit „sende im Testmodus" oder
+>   „Testversand" den aktuellen Versand als Test erzwingen — unabhängig von der Konfiguration.
+>   Claude fragt vor JEDEM Versand nach: „Echt versenden oder Testversand?"
+
 ---
 
 ## ABSENDER
@@ -69,8 +76,16 @@ Aus der Response den Preis (Brutto) extrahieren und dem Nutzer anzeigen:
 
 ⛔ **Nicht weitermachen, bis der Nutzer explizit bestätigt hat** ("ja", "senden", "ok").
 
-Falls Testmodus aktiv (`{{OB24_TEST_MODE}}` = true): Hinweis ausgeben:
-> „⚠️ Testmodus aktiv — der Brief wird NICHT physisch versendet."
+Vor der Bestätigungsfrage: Testmodus-Status klar anzeigen:
+
+Falls `{{OB24_TEST_MODE}} = true`:
+> „⚠️ Testmodus aktiv — der Brief wird NICHT physisch versendet. Kosten: 0 EUR.
+>  Zum echten Versand: `OB24_TEST_MODE` auf `false` setzen."
+
+Falls `{{OB24_TEST_MODE}} = false`:
+> „Möchtest du wirklich senden (echte Kosten: X,XX EUR) oder lieber im Testmodus testen?"
+> Optionen: „Jetzt senden" / „Testversand" / „Abbrechen"
+> → Bei „Testversand": `testMode: true` im API-Call setzen, Konfiguration bleibt unverändert.
 
 ### Schritt 4 — Versand (nach Bestätigung)
 
