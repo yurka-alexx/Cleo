@@ -19,11 +19,13 @@ Installierbar in einer geführten Session — ein Skill erledigt alles.
    > „Führe den Second Brain OS Installationsflow aus."
 3. Claude führt durch alle Phasen — dauert ca. 20–30 Minuten
 
-## Für Mitarbeiter
+## Dokumentation & Materialien
 
-→ [`installation/MITARBEITER-ANLEITUNG-SecondBrainOS.pdf`](./installation/MITARBEITER-ANLEITUNG-SecondBrainOS.pdf)
-
-Vollständige Schritt-für-Schritt-Anleitung inkl. Troubleshooting, Funktionstests und Übergabe-Checkliste.
+| Datei | Beschreibung |
+|---|---|
+| [`DOKUMENTATION.md`](./DOKUMENTATION.md) | Vollständige Produktdokumentation (Module, Variablen, MCP, Changelog) |
+| [`installation/MITARBEITER-ANLEITUNG-SecondBrainOS.pdf`](./installation/MITARBEITER-ANLEITUNG-SecondBrainOS.pdf) | Mitarbeiter-Anleitung (Schritt-für-Schritt, Troubleshooting, Tests) |
+| [`installation/Second-Brain-OS-Verkauf.pdf`](./installation/Second-Brain-OS-Verkauf.pdf) | Verkaufs-PDF für Kunden (Benefits, Autonomie-Level, BAFA-Förderung) |
 
 ## Struktur
 
