@@ -31,6 +31,25 @@ Alle Werte für spätere CLAUDE.md-Dateien speichern.
 
 ---
 
+### Schritt 0.2.3 — Nutzungsprofil für Zeitersparnis-Kalkulation
+
+Frage mit **AskUserQuestion** (wird am Ende für personalisierte Zeitersparnis-Schätzung genutzt):
+
+> „Ein paar kurze Zahlen für dein persönliches System-Profil:"
+
+- **Geschätzte E-Mails pro Tag** (Eingang, Schätzwert genügt — z.B. 20, 50, 100)
+- **Termine / Meetings pro Woche** (Schätzwert, z.B. 5, 10, 20)
+- **Physische Briefe pro Monat** (Schätzwert — ausgehende Briefe, z.B. 2, 5, 10)
+- **Stundensatz oder Stundenwert** (€ — wie viel ist eine Stunde deiner Zeit wert? Schätzwert genügt, z.B. 80€)
+
+Werte speichern:
+- `EMAILS_PRO_TAG = [eingabe oder 25 als Standardwert]`
+- `TERMINE_PRO_WOCHE = [eingabe oder 5 als Standardwert]`
+- `BRIEFE_PRO_MONAT = [eingabe oder 4 als Standardwert]`
+- `STUNDENSATZ = [eingabe oder 80 als Standardwert]`
+
+---
+
 ### Schritt 0.2.5 — Assistenz-Identität festlegen
 
 Frage mit **AskUserQuestion**:
@@ -989,6 +1008,222 @@ Installiert von: {{INSTALLATIONSPARTNER}}
 ## Support
 Bei Fragen: {{INSTALLATIONSPARTNER}} — {{SUPPORT_KONTAKT}}
 ```
+
+→ **Weiter mit Phase 11 — Willkommens-Sequenz.**
+
+---
+
+## PHASE 11 — Willkommens-Sequenz: Second Brain OS live erleben
+
+Nach erfolgreichem Abschluss von Phase 10 (inkl. Übergabenotiz) startet automatisch die Onboarding-Sequenz. Kein Klick, kein Befehl nötig — sie läuft direkt im Anschluss.
+
+Sage zum Auftakt:
+
+> „Perfekt — Installation abgeschlossen. 🎉
+> Ich zeige dir jetzt in 5 kurzen Nachrichten, wie Second Brain OS in deinem Alltag aussehen wird.
+> Einfach lesen, staunen — und danach direkt loslegen."
+
+Kurze Pause (1–2 Sätze), dann Nachricht 1:
+
+---
+
+### Nachricht 1 — So wird dein morgendliches Briefing aussehen
+
+Präsentiere ein vollständiges Demo-Briefing — basierend auf den echten Firmen- und Konfigurationsdaten aus der Installation. Zahlen sind Demo-Werte, Struktur ist 1:1 die echte.
+
+> 🌅 **Guten Morgen, {{BENACHRICHTIGUNGS_NAME}}** — [heutiges Datum]
+>
+> ────────────────────────────────
+> 📬 **Posteingang** — 12 neue Mails seit gestern 18:00 Uhr
+> ├─ ✅ 3 erledigt (Auto-Archiviert)
+> ├─ 💬 4 brauchen eine Antwort → Entwürfe liegen bereit
+> ├─ 🗑️ 3 gelöscht (Newsletter / Spam)
+> ├─ ✉️ 1 Mahnung → Physischer Brief empfohlen
+> └─ 📁 1 archiviert (FYI, kein Handlungsbedarf)
+>
+> 📅 **Dein heutiger Tag** — 3 Termine
+> ├─ 09:30 Kundengespräch Müller GmbH
+> ├─ 11:00 Team-Meeting (Protokoll kommt heute Abend)
+> └─ 14:00–16:00 Focus-Zeit (geblockt, keine Meetings)
+>
+> 🔔 **3 offene Aufgaben von gestern**
+> ├─ Angebot Müller GmbH bis Freitag nachfassen
+> ├─ Eingangsrechnung Lieferant X prüfen
+> └─ Datenschutzbeauftragten kontaktieren
+>
+> Gib einfach ein: *„Geh durch meinen Posteingang"* — ich erledige den Rest.
+> ────────────────────────────────
+>
+> _(Dein echtes Briefing startet täglich um {{INBOX_REVIEW_SCHEDULE}} automatisch.)_
+
+---
+
+### Nachricht 2 — So wird deine Tages-Nachbereitung aussehen
+
+Kurze Überleitung:
+> „Und abends, wenn der Tag vorbei ist, läuft die Nachbereitung — ohne dass du etwas tust:"
+
+Präsentiere eine Demo-Nachbereitung mit fiktivem aber realistischem Inhalt:
+
+> 🌙 **Tages-Nachbereitung — [heutiges Datum]**
+>
+> ────────────────────────────────
+> **📞 Kundengespräch: Müller GmbH** (09:30–10:15)
+> 📋 Besprochen: Paket L, Starttermin Mai, offene Preisfrage
+> ✅ Task: Angebot bis Fr. 17:00 → Kalender-Block Do 14:00 angelegt
+> 💬 E-Mail-Entwurf bereit: „Vielen Dank für unser Gespräch heute..."
+> 📇 CRM: Müller GmbH → Warm Lead, nächster Kontakt: Freitag
+>
+> **👥 Team-Meeting** (11:00–12:00)
+> 📋 Sprint-Planung, 3 neue Tasks verteilt
+> ✅ 2 Web-Tasks an Davit weitergeleitet
+> 📄 Protokoll gespeichert: `Team/Meeting-Notes/[Datum].md`
+>
+> **📊 Tages-Bilanz:**
+> 12 Mails bearbeitet · 4 Entwürfe · 2 Tasks erledigt · 1 Brief in Warteschlange
+> ────────────────────────────────
+>
+> _(Meeting-Review läuft täglich automatisch um {{MEETING_REVIEW_SCHEDULE}} Uhr.)_
+
+---
+
+### Nachricht 3 — So würde ein Brief aussehen
+
+[NUR AUSFÜHREN WENN `brief-versenden`-Modul während Installation eingerichtet wurde]
+
+Überleitung:
+> „Und jetzt das Beste: Ich kann echte physische Briefe verschicken. Ich zeige es dir — im Testmodus, kostenlos."
+
+**Erstelle jetzt einen echten Demo-Brief im OB24-Testmodus:**
+
+Empfänger:
+```
+Max Mustermann
+Musterstraße 1
+12345 Musterstadt
+```
+
+Betreff: `Second Brain OS ist aktiv — eine kurze Mitteilung`
+
+Brieftext:
+```
+Sehr geehrter Herr Mustermann,
+
+dies ist eine automatische Demonstration von Second Brain OS —
+dem digitalen Sekretariat von {{FIRMENNAME}}.
+
+Dieser Brief wurde vollautomatisch erstellt, in korrektem DIN-5008-Layout
+gerendert und an OnlineBrief24 übermittelt — ohne dass ein Mensch auch nur
+eine Zeile getippt hat.
+
+Genau das macht Second Brain OS für {{FIRMENNAME}}: Briefe, E-Mails
+und Aufgaben — erledigt, bevor Sie fragen.
+
+Mit freundlichen Grüßen
+{{ASSISTENT_NAME}} · Digitales Sekretariat
+{{FIRMENNAME}}
+```
+
+Führe `physischen-brief-versenden/SKILL.md` aus — Testmodus erzwingen (`OB24_TEST_MODE = true`).
+
+Nach erfolgreichem Versand:
+> ✉️ **Brief-Demo abgeschlossen.**
+>
+> Der Brief liegt als Testauftrag in deinem OB24-Konto —
+> dort kannst du Layout, Adressierung und Inhalt prüfen, bevor je ein echter Brief rausgeht.
+>
+> 👉 [OB24-Dashboard öffnen → Aufträge](https://www.onlinebrief24.de/account/orders)
+>
+> _(Um echte Briefe zu versenden: `OB24_TEST_MODE` in `physischen-brief-versenden/SKILL.md` auf `false` setzen.)_
+
+Falls `brief-versenden` nicht installiert:
+> „Das Brief-Modul ist bei dir nicht eingerichtet — bei Bedarf kann es jederzeit nachinstalliert werden."
+
+---
+
+### Nachricht 4 — So viel Zeit wirst du sparen
+
+Berechne jetzt die personalisierte Zeitersparnis auf Basis der Werte aus Schritt 0.2.3.
+
+**Berechnungsformel:**
+
+```
+X_INBOX    = EMAILS_PRO_TAG × 2                          [Minuten/Tag durch Inbox-Review]
+X_MEETING  = (TERMINE_PRO_WOCHE × 15) / 5               [Minuten/Tag durch Meeting-Review]
+X_BRIEF    = (BRIEFE_PRO_MONAT × 45) / 22               [Minuten/Tag durch Brief-Automatisierung]
+X_CRM      = 15                                          [Minuten/Tag Kontaktpflege, fest]
+
+GESAMT_MIN = MAX(60, ROUND(X_INBOX + X_MEETING + X_BRIEF + X_CRM))
+GESAMT_H   = GESAMT_MIN / 60  (auf 0.5 runden)
+MONAT_H    = GESAMT_H × 22   (Arbeitstage)
+WERT_MONAT = MONAT_H × STUNDENSATZ
+```
+
+Mindest-Ersparnis: **60 Minuten/Tag** — nie darunter ausgeben.
+
+Präsentiere als persönliche Kalkulation:
+
+> ⏱️ **So viel Zeit gewinnst du zurück — jeden Tag:**
+>
+> ────────────────────────────────
+> 📬 Posteingang & E-Mails:     ~{{X_INBOX}} Min/Tag  ({{EMAILS_PRO_TAG}} Mails tägl.)
+> 📅 Meeting-Nachbereitung:     ~{{X_MEETING}} Min/Tag ({{TERMINE_PRO_WOCHE}} Termine/Woche)
+> ✉️ Briefversand & Layout:     ~{{X_BRIEF}} Min/Tag  ({{BRIEFE_PRO_MONAT}} Briefe/Monat)
+> 📇 CRM & Kontaktpflege:       ~15 Min/Tag  (läuft automatisch mit)
+>
+> **Gesamt: ~{{GESAMT_MIN}} Minuten pro Tag = {{GESAMT_H}} Stunden täglich**
+>
+> Das sind **{{MONAT_H}} Stunden pro Monat** — die du stattdessen in
+> Akquise, Strategie oder einfach Feierabend investieren kannst.
+>
+> Bei einem Stundenwert von {{STUNDENSATZ}} €:
+> **{{WERT_MONAT}} € Mehrwert pro Monat.**
+>
+> _(Konservative Schätzung. Erfahrungswerte aus echten Installationen liegen oft höher.)_
+> ────────────────────────────────
+
+---
+
+### Nachricht 5 — Willkommen in einer neuen Ära
+
+Abschlussnachricht — persönlich, nicht generisch. Ton: kollegial, ein bisschen stolz, ehrlich.
+
+> 🚀 **Viel Spaß beim Benutzen — willkommen in einer neuen Ära.**
+>
+> ────────────────────────────────
+> **Du kannst mich weiterentwickeln und trainieren.**
+> Jede `SKILL.md`, jede `CLAUDE.md` ist lesbar, editierbar, erweiterbar.
+> Neue Fähigkeit gewünscht? Sag es mir — ich zeige dir, wie es geht.
+>
+> **Ich ersetze nahezu vollständig ChatGPT.**
+> Kein Copy-Paste mehr zwischen Tools. Alles passiert hier —
+> mit deinen echten Daten, deinen echten E-Mails, deinen echten Terminen.
+> Und ich lerne mit jedem Gespräch dazu.
+>
+> **Deine Daten bleiben bei dir.**
+> Keine Cloud-Synchronisation, keine Weitergabe, kein Datenschutzrisiko.
+> Deine Dokumente und E-Mails verlassen deinen Arbeitsordner nicht.
+>
+> **Wie du morgen früh startest:**
+> → Claude Desktop öffnen
+> → Sagen: *„Zeig mir mein Briefing für heute"*
+> → Erleben, was ein KI-Sekretariat bedeutet.
+>
+> Bei Fragen, Erweiterungswünschen oder wenn etwas nicht klappt:
+> {{INSTALLATIONSPARTNER}} · {{SUPPORT_KONTAKT}}
+>
+> — {{ASSISTENT_NAME}}, dein digitales Sekretariat bei {{FIRMENNAME}}
+> ────────────────────────────────
+
+---
+
+**Nach der Sequenz:**
+
+Warte kurz, dann frage:
+> „Das war dein persönliches Onboarding. Gibt es Fragen zu einem der Features?"
+
+Falls keine Fragen → Session offiziell beenden.
+Falls Fragen → beantworten, dann beenden.
 
 ---
 
