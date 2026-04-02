@@ -4,10 +4,11 @@
 Scannt den Posteingang, klassifiziert jede Mail und erstellt Entwürfe für alles,
 was eine Antwort braucht. Zu löschende Mails werden in den Papierkorb verschoben.
 
-E-Mail-System:    {{EMAIL_SYSTEM}}
-Firma:            {{FIRMENNAME}}
+E-Mail-System:      {{EMAIL_SYSTEM}}
+Firma:              {{FIRMENNAME}}
 Review-Zeitfenster: {{INBOX_REVIEW_HOURS}}h (Standard: 24)
-Zeitplan:         {{INBOX_REVIEW_SCHEDULE}}
+Zeitplan:           {{INBOX_REVIEW_SCHEDULE}}
+Zusammenfassung an: {{SUMMARY_CHANNEL}}
 
 ---
 
@@ -75,7 +76,7 @@ INBOX-Label entfernen (archiviert in All Mail).
 Für alle Mails mit Status 📂 VERSCHIEBEN den Ordner-Logik-Skill aufrufen:
 → `Sekretariat/skills/inbox-review/ordner-logik/SKILL.md`
 
-### Schritt 6 — Zusammenfassung ausgeben
+### Schritt 6 — Zusammenfassung ausgeben & versenden
 
 Tabellarische Übersicht aller bearbeiteten Mails:
 
@@ -85,7 +86,23 @@ Tabellarische Übersicht aller bearbeiteten Mails:
 | ... | ... | 📁 ARCHIVIEREN | Archiviert |
 | ... | ... | 🗑️ PAPIERKORB | In Papierkorb |
 
-Kurzfassung am Ende: „X Entwürfe erstellt · Y archiviert · Z in Papierkorb"
+Kurzfassung: „X Entwürfe erstellt · Y archiviert · Z in Papierkorb"
+
+Zusammenfassung an `{{SUMMARY_CHANNEL}}` senden:
+
+[WENN summary_channel enthält "email:"]:
+Mailentwurf mit Inbox-Zusammenfassung anlegen:
+- Betreff: „Inbox-Review [DATUM] — [X] Mails bearbeitet"
+- Inhalt: Tabelle + Entwurfs-Hinweise
+[WENN imap-smtp]: `create_draft(to={{SUMMARY_EMAIL}}, subject=..., text=...)`
+[WENN gmail]: `gmail_create_draft(to={{SUMMARY_EMAIL}}, ...)`
+
+[WENN summary_channel enthält "slack:"]:
+Slack-Nachricht an `{{SUMMARY_SLACK_CHANNEL}}`:
+Kurz-Zusammenfassung: Anzahl pro Kategorie + Hinweis auf erstellte Entwürfe.
+
+[WENN summary_channel = "none"]:
+Nur in Claude ausgeben, kein Versand.
 
 ### Schritt 7 — CRM-Hinweis
 

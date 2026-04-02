@@ -263,23 +263,110 @@ Frage mit **AskUserQuestion**:
 > - Ja, einrichten
 > - Nein, überspringen
 
-Falls Nein: weiter mit Phase 6.
+Falls Nein: weiter mit Phase 5b (Zusammenfassungen) → dann Phase 6.
 
 ### Schritt 5.2 — Konfiguration abfragen
 
-Frage mit **AskUserQuestion** (mehrfachauswahl):
+Frage mit **AskUserQuestion** (Mehrfachauswahl):
 - Kalender verbinden: Google Kalender / Outlook Kalender / Keiner
 - Aufgaben-Tool: Notion / keine Aufgabenanbindung
 
-### Schritt 5.3 — Meeting-Review-Skill schreiben
+### Schritt 5.3 — Pocket AI (Meeting-Aufzeichnung) — Empfohlen
+
+Erkläre dem Kunden:
+> „Mit der **Pocket AI App** (iOS/Android) kannst du Live-Meetings und Telefonate
+> aufzeichnen. Claude verbindet sich danach via MCP direkt mit Pocket und zieht
+> Transkripte, Zusammenfassungen und Action Items automatisch — kein manuelles
+> Copy-Paste. Das ist die empfohlene Lösung für vollständige Meeting-Nachbereitung."
+
+Frage mit **AskUserQuestion**:
+> „Soll Pocket AI für Meeting- und Gesprächsaufzeichnung eingerichtet werden?"
+> - Ja, empfohlen — Pocket-App installieren + MCP verbinden
+> - Nein, ohne Aufzeichnung (nur Kalender-Notizen)
+
+**Falls Ja — Pocket MCP einrichten:**
+
+1. Dem Kunden mitteilen:
+   > „Bitte installiere die Pocket AI App auf deinem Smartphone:
+   > iOS: https://apps.apple.com/app/pocket-ai/id6504287901
+   > Android: https://play.google.com/store/apps/details?id=com.heypocketai.pocket
+   > Dann: Pocket → Einstellungen → Developer → API Keys → neuen Key erstellen."
+
+2. Pocket API-Key abfragen (`pk_...`).
+
+3. Pocket MCP in `claude_desktop_config.json` eintragen:
+```json
+"pocket": {
+  "command": "npx",
+  "args": [
+    "-y",
+    "mcp-remote",
+    "https://public.heypocketai.com/mcp",
+    "--header",
+    "Authorization:${AUTH_HEADER}"
+  ],
+  "env": {
+    "AUTH_HEADER": "Bearer {{POCKET_API_KEY}}"
+  }
+}
+```
+
+4. Wert `{{POCKET_ENABLED}} = true` und `{{POCKET_API_KEY}}` in `meeting-review/SKILL.md` eintragen.
+5. Hinweis: Nach Claude-Neustart verfügbar. Erste Aufzeichnung mit Pocket-App testen.
+
+### Schritt 5.4 — Meeting-Review-Skill schreiben
 
 Erstelle `Sekretariat/skills/meeting-review/SKILL.md` mit:
 - Kalender-Tool je nach Auswahl (gcal_list_events / Outlook)
+- Pocket-Integration falls aktiviert (search_pocket_conversations_timerange für heute)
 - Aufgaben-Erstellung je nach Auswahl (Notion / nur Entwürfe)
-- Mailentwürfe für Kunden-Zusammenfassungen via [EMAIL_SYSTEM]
-- Kernfunktionen: Meetings laden → klassifizieren → Zusammenfassung → Entwurf → ggf. Aufgabe anlegen
+- Zusammenfassungsversand via `{{SUMMARY_CHANNEL}}` (wird in Phase 5b gesetzt)
+- Kernfunktionen: Meetings laden → ggf. Pocket-Transkript → Zusammenfassung → Versand → ggf. Aufgabe
 
 Vorlage aus `templates/Sekretariat/skills/meeting-review/SKILL.md` verwenden und mit Kundenvariablen befüllen.
+
+---
+
+## PHASE 5b — Zusammenfassungsversand konfigurieren
+
+Dieser Schritt gilt für **Inbox-Review-Zusammenfassungen** und **Meeting-Zusammenfassungen**.
+
+### Schritt 5b.1 — Kanal abfragen
+
+Frage mit **AskUserQuestion**:
+> „Wohin sollen die täglichen Zusammenfassungen (Inbox-Review, Meeting-Nachbereitung) gesendet werden?"
+> - Per E-Mail an mich selbst (empfohlen, funktioniert immer)
+> - Slack (Channel oder DM)
+> - Microsoft Teams
+> - Nur in Claude anzeigen (kein Versand)
+
+Mehrfachauswahl möglich — z.B. E-Mail + Slack.
+
+**Falls E-Mail:**
+Ziel-Adresse abfragen (Standard: `{{EMAIL_ADDRESS}}`).
+Wert `{{SUMMARY_EMAIL}} = [adresse]` speichern.
+
+**Falls Slack:**
+- Prüfen ob Slack MCP verbunden ist (über Claude Desktop Connectors).
+- Falls nicht: Anleitung zum Verbinden geben.
+- Channel-Name oder DM-Ziel abfragen (z.B. `#general`, `@ich-selbst`).
+- Wert `{{SUMMARY_SLACK_CHANNEL}} = [channel]` speichern.
+- Wichtig: Zusammenfassungen werden als Miss-Baker-Webhook gesendet falls verfügbar,
+  sonst über Slack MCP direkt.
+
+**Falls Teams:**
+- Teams-Connector in Claude Desktop verbinden (soweit verfügbar).
+- Ziel-Channel abfragen.
+- Wert `{{SUMMARY_TEAMS_CHANNEL}} = [channel]` speichern.
+
+### Schritt 5b.2 — Variablen in Skills eintragen
+
+`{{SUMMARY_CHANNEL}}` in beiden Skills setzen:
+- `Sekretariat/skills/inbox-review/SKILL.md`
+- `Sekretariat/skills/meeting-review/SKILL.md`
+
+Format: `email:[adresse]` / `slack:[channel]` / `teams:[channel]` / `none`
+Mehrere Kanäle: kommagetrennt, z.B. `email:chef@firma.de,slack:#posteingang`
 
 ---
 
