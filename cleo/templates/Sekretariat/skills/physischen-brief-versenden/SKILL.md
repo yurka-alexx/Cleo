@@ -33,7 +33,7 @@ Falls nicht bereits im Prompt angegeben, abfragen:
 - Empfänger: Name, Firma (optional), Straße, PLZ, Ort, Land (Standard: DE)
 - Betreff des Briefes
 - Brieftext (oder Entwurf aus vorherigem Schritt übernehmen)
-- Brieftyp: Standard / Anwaltsbrief (Aktenzeichen erfragen falls Anwaltsbrief)
+- Brieftyp: Standard / Formelles Schreiben (Aktenzeichen erfragen falls Formelles Schreiben)
 
 ### Schritt 2 — Brief-PDF generieren
 
@@ -49,7 +49,7 @@ Layout-Standard (v8):
 - Grußformel: "Mit freundlichen Grüßen"
 - Unterschrift: Signum-Bild + Name
 
-Bei Anwaltsbriefen zusätzlich:
+Bei Formelles Schreibenen zusätzlich:
 - Aktenzeichen im Briefkopf (unterhalb Betreff, grau, 9pt)
 - Abschluss: "Rechtsabteilung, i.A. der Geschäftsführung\n{{FIRMENNAME}}"
 

@@ -202,7 +202,7 @@ Nutze **Write**-Tool für alle CLAUDE.md- und MEMORY.md-Dateien.
 │       ├── crm-sync/SKILL.md           ← aus Template (Phase 6)
 │       └── physischen-brief-versenden/SKILL.md  ← aus Template (Phase 7)
 ├── Team/
-│   └── Firmenanwalt/
+│   └── KI-Rechtsassistent/
 │       ├── CLAUDE.md       ← aus E-Mail-Scan befüllen (Phase 8)
 │       ├── MEMORY.md       ← leer anlegen
 │       └── Fallarchiv/     ← Ordner für Akten
@@ -686,7 +686,7 @@ Erstelle `Sekretariat/skills/physischen-brief-versenden/SKILL.md` mit:
 
 ---
 
-## PHASE 8 — Firmenanwalt einrichten
+## PHASE 8 — KI-Rechtsassistent einrichten
 
 ### Schritt 8.1 — E-Mail-Postfach nach Rechtsthemen durchsuchen
 
@@ -726,14 +726,14 @@ Typische Rechtsgebiete je Branche:
 - IT: Softwarelizenzrecht, Datenschutz, Haftungsrecht, SLA
 - Immobilien: Mietrecht, Kaufvertragsrecht, WEG-Recht, Maklerrecht
 
-### Schritt 8.3 — Firmenanwalt CLAUDE.md erstellen
+### Schritt 8.3 — KI-Rechtsassistent CLAUDE.md erstellen
 
-Erstelle `Team/Firmenanwalt/CLAUDE.md`:
+Erstelle `Team/Rechtsassistent/CLAUDE.md`:
 
 ```markdown
-# Firmenanwalt — [FIRMENNAME]
+# KI-Rechtsassistent — [FIRMENNAME]
 
-Du bist der interne Firmenanwalt von [FIRMENNAME] auf Senior-Ebene.
+Du bist der interne Rechtsassistent von [FIRMENNAME] auf Senior-Ebene.
 Du hast den Hintergrund eines erfahrenen Rechtsanwalts mit Schwerpunkt auf den
 relevanten Rechtsgebieten dieses Unternehmens.
 
@@ -841,7 +841,7 @@ Prüfe und hake gemeinsam mit dem Mitarbeiter ab:
 - [ ] crm-sync-Skill vorhanden
 - [ ] meeting-review-Skill vorhanden (falls gewählt)
 - [ ] brief-versenden-Skill vorhanden (falls gewählt) inkl. build_brief.py
-- [ ] Firmenanwalt/CLAUDE.md erstellt mit Rechtsgebieten
+- [ ] KI-Rechtsassistent/CLAUDE.md erstellt mit Rechtsgebieten
 - [ ] Mini-CRM mit initialen Kontakten befüllt
 - [ ] Post-Requisiten hochgeladen (Logo, Signum) oder als ausstehend markiert
 
@@ -916,19 +916,19 @@ Nach erfolgreichem Test:
 
 ---
 
-### Schritt 10.4 — Funktionstest: Firmenanwalt
+### Schritt 10.4 — Funktionstest: KI-Rechtsassistent
 
 **Test 7 — Rechtsgebiete:**
 > „Was sind die wichtigsten Rechtsgebiete für unser Unternehmen?"
 
-✅ Erwartet: Firmenanwalt listet die während Installation erkannten Rechtsgebiete mit Begründung.
+✅ Erwartet: KI-Rechtsassistent listet die während Installation erkannten Rechtsgebiete mit Begründung.
 
-**Test 8 — Anwaltsbrief generieren (falls brief-versenden installiert):**
-> „Erstelle einen kurzen Anwaltsbrief an Max Mustermann wegen eines offenen Betrags von 500 €.
+**Test 8 — Formelles Schreiben generieren (falls brief-versenden installiert):**
+> „Erstelle einen kurzen Formelles Schreiben an Max Mustermann wegen eines offenen Betrags von 500 €.
 > Lege eine neue Akte an."
 
 ✅ Erwartet:
-- Neue Akte in `Team/Firmenanwalt/Fallarchiv/[AKTENZEICHEN]/` angelegt
+- Neue Akte in `Team/Rechtsassistent/Fallarchiv/[AKTENZEICHEN]/` angelegt
 - Brief mit Aktenzeichen im Briefkopf generiert
 - Abschluss: „Rechtsabteilung, i.A. der Geschäftsführung · {{FIRMENNAME}}"
 

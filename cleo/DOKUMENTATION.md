@@ -16,7 +16,7 @@
    - 4.2 [Meeting-Review](#42-meeting-review)
    - 4.3 [Physischer Briefversand (OB24)](#43-physischer-briefversand-ob24)
    - 4.4 [CRM-Sync](#44-crm-sync)
-   - 4.5 [Firmenanwalt](#45-firmenanwalt)
+   - 4.5 [KI-Rechtsassistent](#45-firmenanwalt)
 5. [Autonomie-Level](#5-autonomie-level)
 6. [Konfigurationsvariablen](#6-konfigurationsvariablen)
 7. [MCP-Integrationen](#7-mcp-integrationen)
@@ -231,7 +231,7 @@ Danach wird für jedes Gespräch:
 
 #### Ablauf
 
-1. **Briefdaten erfassen**: Empfänger, Betreff, Brieftext, Brieftyp (Standard / Anwaltsbrief)
+1. **Briefdaten erfassen**: Empfänger, Betreff, Brieftext, Brieftyp (Standard / Formelles Schreiben)
 2. **Brief-PDF generieren**: `build_brief.py` (liegt nach Installation in `Post-Requisiten/`)
    - Ränder: Links/Rechts/Unten = 57pt, Oben = 80pt
    - Briefkopf: Logo (oben rechts) + Firmendaten
@@ -257,7 +257,7 @@ Danach wird für jedes Gespräch:
 #### Brieftypen
 
 - **Standardbrief**: Firmenbriefkopf, normaler Abschluss
-- **Anwaltsbrief**: Zusätzlich Aktenzeichen im Briefkopf, Abschluss: „Rechtsabteilung, i.A. der Geschäftsführung, [Firma]"
+- **Formelles Schreiben**: Zusätzlich Aktenzeichen im Briefkopf, Abschluss: „Rechtsabteilung, i.A. der Geschäftsführung, [Firma]"
 
 ---
 
@@ -305,20 +305,20 @@ Nach jedem Review wird eine Zusammenfassung der CRM-Änderungen ausgegeben:
 
 ---
 
-### 4.5 Firmenanwalt
+### 4.5 KI-Rechtsassistent
 
-**Datei:** `Team/Firmenanwalt/CLAUDE.md`
+**Datei:** `Team/Rechtsassistent/CLAUDE.md`
 
 **Funktion:** KI-gestützter Recherche- und Verwaltungsassistent für rechtliche Themen.
 
-> ⚠️ **Wichtiger Haftungsausschluss**: Der Firmenanwalt ist **kein zugelassener Rechtsanwalt** und ersetzt keinen. Er dient der Recherche, Strukturierung und Verwaltung von Rechtsvorgängen — nicht der Rechtsberatung im Sinne des RDG (Rechtsdienstleistungsgesetz). Bei jedem Thema mit rechtlicher Tragweite endet jede Antwort mit dem Hinweis: *„Bitte vor verbindlichen Schritten mit einem zugelassenen Rechtsanwalt abstimmen."*
+> ⚠️ **Wichtiger Haftungsausschluss**: Der KI-Rechtsassistent ist **kein zugelassener Rechtsanwalt** und ersetzt keinen. Er dient der Recherche, Strukturierung und Verwaltung von Rechtsvorgängen — nicht der Rechtsberatung im Sinne des RDG (Rechtsdienstleistungsgesetz). Bei jedem Thema mit rechtlicher Tragweite endet jede Antwort mit dem Hinweis: *„Bitte vor verbindlichen Schritten mit einem zugelassenen Rechtsanwalt abstimmen."*
 
 #### Fähigkeiten (KI-Assistent, kein Anwalt)
 
 - Rechtliche Sachverhalte strukturieren und zusammenfassen
 - Relevante Gesetze und Urteile recherchieren (BGB, HGB, UStG, DSGVO, UWG, VOB u.a.)
 - Vertragsentwürfe als **Arbeitsdokument** vorbereiten
-- Schriftverkehr und Fallakten in `Team/Firmenanwalt/Fallarchiv/` organisieren
+- Schriftverkehr und Fallakten in `Team/Rechtsassistent/Fallarchiv/` organisieren
 - Auf mögliche rechtliche Risiken hinweisen (proaktiv, unaufgefordert)
 
 #### Aktenführung
@@ -333,7 +333,7 @@ Fallarchiv/
 
 #### Rechtsgebiete
 
-Werden während der Installation automatisch aus dem E-Mail-Postfach (180 Tage) abgeleitet und in `Team/Firmenanwalt/CLAUDE.md` eingetragen. Typische Rechtsgebiete je Branche:
+Werden während der Installation automatisch aus dem E-Mail-Postfach (180 Tage) abgeleitet und in `Team/Rechtsassistent/CLAUDE.md` eingetragen. Typische Rechtsgebiete je Branche:
 
 | Branche | Häufige Rechtsgebiete |
 |---|---|
@@ -485,12 +485,12 @@ Gesamtdauer: ca. 2–4 Stunden | Alle Schritte geführt und interaktiv.
 | **5c** | Autonomie-Variablen in alle Skills übertragen | 5 Min |
 | **6** | CRM konfigurieren (externes CRM optional) | 10 Min |
 | **7** | Physischen Briefversand einrichten (optional, OB24) | 15 Min |
-| **8** | Firmenanwalt einrichten (E-Mail-Scan 180 Tage) | 10 Min |
+| **8** | KI-Rechtsassistent einrichten (E-Mail-Scan 180 Tage) | 10 Min |
 | **9** | Mini-CRM vorbefüllen (Top-50 Kontakte aus Postfach) | 10–20 Min |
 | **10.1** | Installations-Checkliste abhaken | 5 Min |
 | **10.2** | Funktionstest E-Mail & CRM (Tests 1–3) | 10 Min |
 | **10.3** | Funktionstest Brief-Layout & OB24 (Tests 4–6, Testmodus) | 10 Min |
-| **10.4** | Funktionstest Firmenanwalt (Tests 7–8) | 5 Min |
+| **10.4** | Funktionstest KI-Rechtsassistent (Tests 7–8) | 5 Min |
 | **10.5** | Scheduled Tasks anlegen (Inbox-Review + Meeting-Review) | 5 Min |
 | **10.6** | Übergabenotiz UEBERGABE.md generieren | 5 Min |
 
@@ -532,7 +532,7 @@ Während der Installation ist `OB24_TEST_MODE = true` gesetzt. Der finale Test:
 │       └── physischen-brief-versenden/SKILL.md
 │
 └── Team/
-    └── Firmenanwalt/
+    └── KI-Rechtsassistent/
         ├── CLAUDE.md                   ← Juristischer Assistent (mit Haftungsausschluss)
         ├── MEMORY.md
         └── Fallarchiv/
@@ -571,7 +571,7 @@ Während der Installation ist `OB24_TEST_MODE = true` gesetzt. Der finale Test:
 **Rechtsfrage:**
 ```
 „Kann ich einen laufenden Dienstleistungsvertrag fristlos kündigen?"
-→ Firmenanwalt recherchiert, strukturiert Sachverhalt, nennt relevante Paragrafen
+→ KI-Rechtsassistent recherchiert, strukturiert Sachverhalt, nennt relevante Paragrafen
 → Immer mit Hinweis: „Bitte vor Schritten mit Rechtsanwalt abstimmen"
 ```
 
@@ -583,7 +583,7 @@ Während der Installation ist `OB24_TEST_MODE = true` gesetzt. Der finale Test:
 | Meeting-Nachbereitung | „Mach die Meeting-Nachbereitung" / „Was war heute" |
 | Brief versenden | „Schreib einen Brief an [Name]" / „brief versenden" |
 | CRM aktualisieren | „Sync das CRM" / „Neue Kontakte eintragen" |
-| Rechtsfrage stellen | Direkt in `Team/Firmenanwalt/` Subfolder öffnen |
+| Rechtsfrage stellen | Direkt in `Team/Rechtsassistent/` Subfolder öffnen |
 
 ---
 
@@ -651,7 +651,7 @@ Weitere Informationen: [www.bafa.de](https://www.bafa.de) | Programm: Förderung
 - **NEU**: Kategorie `✉️ BRIEF` in Inbox-Review — physischer Brief als Antwort-Option
 - **NEU**: Brief-Empfehlungen in Meeting-Review-Zusammenfassung (neue Spalte „Brief")
 - **NEU**: OB24 Testmodus pro Versand wählbar (Session-Override unabhängig von Konfiguration)
-- **NEU**: Firmenanwalt-Haftungsausschluss prominenter und umfassender
+- **NEU**: KI-Rechtsassistent-Haftungsausschluss prominenter und umfassender
 - **FIX**: OB24-Credentials in Installation korrigiert (Username/Passwort statt API-Key)
 - **FIX**: OB24-Konto-Voraussetzung in Phase 0 + Mitarbeiter-PDF ergänzt
 - **FIX**: BAFA 80% auf korrekte Bundesländer eingeschränkt (Brandenburg, MV, Sachsen, SA, Thüringen)
@@ -676,7 +676,7 @@ Weitere Informationen: [www.bafa.de](https://www.bafa.de) | Programm: Förderung
 
 ### v1.0.0 — Februar 2026
 - Erster vollständiger Installationsflow (Phasen 0–10)
-- Inbox-Review, Meeting-Review, CRM-Sync, Firmenanwalt
+- Inbox-Review, Meeting-Review, CRM-Sync, KI-Rechtsassistent
 - Physischer Briefversand via OB24-API
 - Mitarbeiter-Anleitung als PDF
 

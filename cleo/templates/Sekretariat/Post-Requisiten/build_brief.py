@@ -16,7 +16,7 @@ Oder per Import:
                     "plz": "12345", "ort": "Musterstadt"},
         betreff="Betreff des Briefes",
         text="Brieftext...",
-        aktenzeichen=None  # oder z.B. "2026-001-VERTR" für Anwaltsbriefe
+        aktenzeichen=None  # oder z.B. "2026-001-VERTR" für Formelles Schreibene
     )
 """
 
@@ -116,7 +116,7 @@ def _draw_briefkopf(c: canvas.Canvas, aktenzeichen: str = None):
     c.line(LEFT, H - 52, W - RIGHT, H - 52)
     c.setStrokeColorRGB(0, 0, 0)
 
-    # Aktenzeichen (nur bei Anwaltsbriefen)
+    # Aktenzeichen (nur bei Formelles Schreibenen)
     if aktenzeichen:
         c.setFont(FONT_NORMAL, FONT_SMALL)
         c.setFillColorRGB(0.5, 0.5, 0.5)
@@ -162,7 +162,7 @@ def generate_brief(
     aktenzeichen: str = None,
     grussformel: str = "Mit freundlichen Grüßen",
     unterzeichner: str = None,
-    anwalt_modus: bool = False,
+    formell_modus: bool = False,
     output_path: str = None,
 ) -> str:
     """
@@ -172,10 +172,10 @@ def generate_brief(
         empfaenger: dict mit keys: name, firma (opt.), strasse, plz, ort, land (opt.)
         betreff: Betreff-Zeile (wird bei Bedarf umgebrochen)
         text: Brieftext (Zeilenumbrüche mit \\n)
-        aktenzeichen: Aktenzeichen für Anwaltsbriefe (optional)
+        aktenzeichen: Aktenzeichen für Formelles Schreibene (optional)
         grussformel: Standard "Mit freundlichen Grüßen"
         unterzeichner: Name des Unterzeichners (optional, aus Firmendaten wenn leer)
-        anwalt_modus: True für Anwaltsbriefe (Aktenzeichen + Rechtsabt.-Abschluss)
+        formell_modus: True für Formelles Schreibene (Aktenzeichen + Rechtsabt.-Abschluss)
         output_path: Ausgabepfad (auto-generiert wenn None)
 
     Returns:
@@ -272,7 +272,7 @@ def generate_brief(
     c.setFont(FONT_NORMAL, FONT_SIZE)
     if unterzeichner:
         c.drawString(LEFT, name_y, unterzeichner)
-    elif anwalt_modus:
+    elif formell_modus:
         # Anwaltsmodus: Rechtsabteilung + Firma
         c.drawString(LEFT, name_y, "Rechtsabteilung, i.A. der Geschäftsführung")
         c.drawString(LEFT, name_y - LH, FIRMA_NAME)
@@ -299,7 +299,7 @@ def generate_brief(
 if __name__ == "__main__":
     print("=== Briefgenerator — Second Brain OS ===\n")
 
-    anwalt = input("Anwaltsbrief? (j/n): ").strip().lower() == "j"
+    anwalt = input("Formelles Schreiben? (j/n): ").strip().lower() == "j"
     az = None
     if anwalt:
         az = input("Aktenzeichen (z.B. 2026-001-VERTR): ").strip()
@@ -337,7 +337,7 @@ if __name__ == "__main__":
         text=text,
         aktenzeichen=az,
         unterzeichner=unterz,
-        anwalt_modus=anwalt,
+        formell_modus=anwalt,
     )
 
     print(f"\n✅ PDF erstellt: {pdf}")

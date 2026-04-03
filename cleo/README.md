@@ -10,7 +10,7 @@ Installierbar in einer geführten Session — ein Skill erledigt alles.
 - **Meeting-Review** mit Kalender- und Aufgaben-Anbindung (optional)
 - **Physischer Briefversand** via OB24-API (optional)
 - **CRM-Sync** aus dem Postfach + externe CRM-Anbindung (HubSpot, Salesforce, Pipedrive, Close.io)
-- **Firmenanwalt** — lernt Rechtsgebiete automatisch aus dem Postfach
+- **KI-Rechtsassistent** — lernt Rechtsgebiete automatisch aus dem Postfach
 
 ## Installation beim Kunden
 
@@ -43,5 +43,5 @@ cleo/
     │       ├── crm-sync/SKILL.md
     │       └── physischen-brief-versenden/SKILL.md
     └── Team/
-        └── Firmenanwalt/CLAUDE.md
+        └── KI-Rechtsassistent/CLAUDE.md
 ```

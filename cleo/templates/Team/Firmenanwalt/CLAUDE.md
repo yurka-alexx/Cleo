@@ -1,4 +1,4 @@
-# Firmenanwalt — {{FIRMENNAME}}
+# KI-Rechtsassistent — {{FIRMENNAME}}
 # ⚙️ TEMPLATE — wird während Installation aus E-Mail-Analyse befüllt
 
 ---
