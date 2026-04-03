@@ -25,7 +25,7 @@ Installierbar in einer geführten Session — ein Skill erledigt alles.
 |---|---|
 | [`DOKUMENTATION.md`](./DOKUMENTATION.md) | Vollständige Produktdokumentation (Module, Variablen, MCP, Changelog) |
 | [`installation/MITARBEITER-ANLEITUNG-Cleo.pdf`](./installation/MITARBEITER-ANLEITUNG-Cleo.pdf) | Mitarbeiter-Anleitung (Schritt-für-Schritt, Troubleshooting, Tests) |
-| [`installation/Second-Brain-OS-Verkauf.pdf`](./installation/Second-Brain-OS-Verkauf.pdf) | Verkaufs-PDF für Kunden (Benefits, Autonomie-Level, BAFA-Förderung) |
+| [`Cleo-Verkauf.pdf`](../Cleo-Verkauf.pdf) | Verkaufs-PDF für Kunden (Benefits, Autonomie-Level, BAFA-Förderung) |
 
 ## Struktur
 
