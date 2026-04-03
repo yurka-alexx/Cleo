@@ -24,8 +24,8 @@ Installierbar in einer geführten Session — ein Skill erledigt alles.
 | Datei | Beschreibung |
 |---|---|
 | [`DOKUMENTATION.md`](./DOKUMENTATION.md) | Vollständige Produktdokumentation (Module, Variablen, MCP, Changelog) |
-| [`installation/MITARBEITER-ANLEITUNG-Cleo.pdf`](./installation/MITARBEITER-ANLEITUNG-Cleo.pdf) | Mitarbeiter-Anleitung (Schritt-für-Schritt, Troubleshooting, Tests) |
-| [`Cleo-Verkauf.pdf`](../Cleo-Verkauf.pdf) | Verkaufs-PDF für Kunden (Benefits, Autonomie-Level, BAFA-Förderung) |
+| [`installation/Cleo-Mitarbeiter.pdf`](./installation/Cleo-Mitarbeiter.pdf) | Mitarbeiter-Anleitung (Schritt-für-Schritt, Troubleshooting, Tests) |
+| [`installation/Cleo-Verkauf.pdf`](./installation/Cleo-Verkauf.pdf) | Verkaufs-PDF für Kunden (Benefits, Autonomie-Level, BAFA-Förderung) |
 
 ## Struktur
 
@@ -33,7 +33,8 @@ Installierbar in einer geführten Session — ein Skill erledigt alles.
 cleo/
 ├── installation/
 │   ├── SKILL.md                          ← Master-Installationsflow (Claude-Skill)
-│   └── MITARBEITER-ANLEITUNG-...pdf      ← Druckbare Anleitung für Mitarbeiter
+│   ├── Cleo-Mitarbeiter.pdf              ← Druckbare Anleitung für Mitarbeiter
+│   └── Cleo-Verkauf.pdf                  ← Verkaufs-PDF für Kunden
 └── templates/
     ├── Sekretariat/
     │   └── skills/
