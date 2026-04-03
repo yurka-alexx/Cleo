@@ -1,4 +1,4 @@
-# Second Brain OS — Produktdokumentation
+# Cleo — Produktdokumentation
 
 > Letzte Aktualisierung: April 2026
 > Version: 1.3.0
@@ -8,7 +8,7 @@
 
 ## Inhaltsverzeichnis
 
-1. [Was ist Second Brain OS?](#1-was-ist-second-brain-os)
+1. [Was ist Cleo?](#1-was-ist-cleo)
 2. [Architektur & technische Grundlage](#2-architektur--technische-grundlage)
 3. [Voraussetzungen](#3-voraussetzungen)
 4. [Module im Detail](#4-module-im-detail)
@@ -29,9 +29,9 @@
 
 ---
 
-## 1. Was ist Second Brain OS?
+## 1. Was ist Cleo?
 
-Second Brain OS ist ein vollständig vorkonfiguriertes KI-Arbeitsplatzsystem, das auf **Claude Desktop (Cowork-Modus)** läuft und als digitales Sekretariat für kleine und mittlere Unternehmen fungiert.
+Cleo ist ein vollständig vorkonfiguriertes KI-Arbeitsplatzsystem, das auf **Claude Desktop (Cowork-Modus)** läuft und als digitales Sekretariat für kleine und mittlere Unternehmen fungiert.
 
 Der Nutzer spricht mit dem System in normaler Sprache — keine Programmierkenntnisse, keine Befehle. Das System übernimmt:
 
@@ -54,7 +54,7 @@ Der Nutzer spricht mit dem System in normaler Sprache — keine Programmierkennt
 
 ## 2. Architektur & technische Grundlage
 
-Second Brain OS ist kein eigenständiges Softwareprodukt, sondern ein **Konfigurationssystem** für Claude Desktop. Es besteht aus:
+Cleo ist kein eigenständiges Softwareprodukt, sondern ein **Konfigurationssystem** für Claude Desktop. Es besteht aus:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -346,7 +346,7 @@ Werden während der Installation automatisch aus dem E-Mail-Postfach (180 Tage) 
 
 ## 5. Autonomie-Level
 
-Das Autonomie-Level ist die **zentrale Konfigurationsentscheidung** der Installation. Es bestimmt, wie eigenständig Second Brain OS in allen Modulen handelt.
+Das Autonomie-Level ist die **zentrale Konfigurationsentscheidung** der Installation. Es bestimmt, wie eigenständig Cleo in allen Modulen handelt.
 
 | Level | Name | Was passiert automatisch |
 |---|---|---|
@@ -423,7 +423,7 @@ Das Level kann jederzeit durch Änderung der Variablen in den jeweiligen SKILL.m
 
 ## 7. MCP-Integrationen
 
-Second Brain OS nutzt folgende MCP-Server (Model Context Protocol):
+Cleo nutzt folgende MCP-Server (Model Context Protocol):
 
 | MCP | Zweck | Installation |
 |---|---|---|
@@ -465,7 +465,7 @@ Der `npx mcp-remote`-Eintrag wird in `claude_desktop_config.json` eingetragen:
 
 Die vollständige Installation läuft über **einen einzigen Skill-Aufruf** in Claude Desktop:
 
-> „Führe den Second Brain OS Installationsflow aus."
+> „Führe den Cleo Installationsflow aus."
 
 Gesamtdauer: ca. 2–4 Stunden | Alle Schritte geführt und interaktiv.
 
@@ -546,7 +546,7 @@ Während der Installation ist `OB24_TEST_MODE = true` gesetzt. Der finale Test:
 
 ## 10. Tägliche Nutzung
 
-### Typischer Arbeitstag mit Second Brain OS
+### Typischer Arbeitstag mit Cleo
 
 **Morgens (Level 2 / Level 3):**
 ```
@@ -605,7 +605,7 @@ Während der Installation ist `OB24_TEST_MODE = true` gesetzt. Der finale Test:
 
 ## 12. BAFA-Förderung
 
-Second Brain OS kann über das BAFA-Programm **„Förderung unternehmerischen Know-hows"** als Digitalisierungsberatung teilfinanziert werden.
+Cleo kann über das BAFA-Programm **„Förderung unternehmerischen Know-hows"** als Digitalisierungsberatung teilfinanziert werden.
 
 ### Konditionen (Stand: 2024/2025 — vor Antragstellung prüfen)
 

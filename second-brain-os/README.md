@@ -1,4 +1,4 @@
-# Second Brain OS — Produkt
+# Cleo — Produkt
 
 Vollständiges KI-Arbeitsplatzsystem für Unternehmen, basierend auf Claude Cowork.
 Installierbar in einer geführten Session — ein Skill erledigt alles.
@@ -16,7 +16,7 @@ Installierbar in einer geführten Session — ein Skill erledigt alles.
 
 1. Claude Desktop öffnen → Cowork-Modus → Kundenordner auswählen
 2. In der Chat-Eingabe:
-   > „Führe den Second Brain OS Installationsflow aus."
+   > „Führe den Cleo Installationsflow aus."
 3. Claude führt durch alle Phasen — dauert ca. 20–30 Minuten
 
 ## Dokumentation & Materialien
@@ -24,13 +24,13 @@ Installierbar in einer geführten Session — ein Skill erledigt alles.
 | Datei | Beschreibung |
 |---|---|
 | [`DOKUMENTATION.md`](./DOKUMENTATION.md) | Vollständige Produktdokumentation (Module, Variablen, MCP, Changelog) |
-| [`installation/MITARBEITER-ANLEITUNG-SecondBrainOS.pdf`](./installation/MITARBEITER-ANLEITUNG-SecondBrainOS.pdf) | Mitarbeiter-Anleitung (Schritt-für-Schritt, Troubleshooting, Tests) |
+| [`installation/MITARBEITER-ANLEITUNG-Cleo.pdf`](./installation/MITARBEITER-ANLEITUNG-Cleo.pdf) | Mitarbeiter-Anleitung (Schritt-für-Schritt, Troubleshooting, Tests) |
 | [`installation/Second-Brain-OS-Verkauf.pdf`](./installation/Second-Brain-OS-Verkauf.pdf) | Verkaufs-PDF für Kunden (Benefits, Autonomie-Level, BAFA-Förderung) |
 
 ## Struktur
 
 ```
-second-brain-os/
+cleo/
 ├── installation/
 │   ├── SKILL.md                          ← Master-Installationsflow (Claude-Skill)
 │   └── MITARBEITER-ANLEITUNG-...pdf      ← Druckbare Anleitung für Mitarbeiter

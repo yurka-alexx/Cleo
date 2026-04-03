@@ -1,6 +1,6 @@
-# Skill: Second Brain OS — Installation
+# Skill: Cleo — Installation
 
-Vollständiger Installationsflow für Second Brain OS beim Kunden. Führt Schritt für Schritt durch alle Phasen — von der ersten Frage bis zum fertigen, einsatzbereiten Arbeitsplatz.
+Vollständiger Installationsflow für Cleo beim Kunden. Führt Schritt für Schritt durch alle Phasen — von der ersten Frage bis zum fertigen, einsatzbereiten Arbeitsplatz.
 
 **Ausführen als:** Claude Cowork-Session im Hauptordner des Kunden.
 
@@ -105,12 +105,12 @@ E-Mail: [EMAIL]
 ### Schritt 0.4 — Autonomie-Level festlegen
 
 **Dies ist die wichtigste Konfigurationsentscheidung der gesamten Installation.**
-Das gewählte Level bestimmt, wie eigenständig Second Brain OS in allen Modulen handelt.
+Das gewählte Level bestimmt, wie eigenständig Cleo in allen Modulen handelt.
 
 Erkläre dem Kunden die drei Stufen:
 
 > **Level 1 — Beobachter (Empfehlung für den Start)**
-> Second Brain OS liest, analysiert und fasst zusammen — macht aber nichts eigenständig.
+> Cleo liest, analysiert und fasst zusammen — macht aber nichts eigenständig.
 > → Mails klassifizieren · Meetings zusammenfassen · Infos aufbereiten
 > → Alle Aktionen werden nur vorgeschlagen, du entscheidest selbst.
 >
@@ -126,7 +126,7 @@ Erkläre dem Kunden die drei Stufen:
 > → Vollautomatisch im Hintergrund — du bekommst nur das Ergebnis.
 
 Frage mit **AskUserQuestion** (Einfachauswahl):
-> „Welches Autonomie-Level soll Second Brain OS erhalten?"
+> „Welches Autonomie-Level soll Cleo erhalten?"
 > - Level 1 — Beobachter: Nur zusammenfassen, ich entscheide alles selbst
 > - Level 2 — Assistent: Zusammenfassen + E-Mail-Entwürfe automatisch erstellen
 > - Level 3 — Autopilot: Alles automatisch — Termine, To-Dos, Benachrichtigungen
@@ -975,7 +975,7 @@ Beide Tasks in ÜBERGABE.md dokumentieren (Zeitplan + manueller Trigger-Befehl).
 Erstelle `ÜBERGABE.md` im Hauptordner:
 
 ```markdown
-# Second Brain OS — Übergabe [FIRMENNAME]
+# Cleo — Übergabe [FIRMENNAME]
 Installiert am: [DATUM]
 Installiert von: {{INSTALLATIONSPARTNER}}
 
@@ -1013,14 +1013,14 @@ Bei Fragen: {{INSTALLATIONSPARTNER}} — {{SUPPORT_KONTAKT}}
 
 ---
 
-## PHASE 11 — Willkommens-Sequenz: Second Brain OS live erleben
+## PHASE 11 — Willkommens-Sequenz: Cleo live erleben
 
 Nach erfolgreichem Abschluss von Phase 10 (inkl. Übergabenotiz) startet automatisch die Onboarding-Sequenz. Kein Klick, kein Befehl nötig — sie läuft direkt im Anschluss.
 
 Sage zum Auftakt:
 
 > „Perfekt — Installation abgeschlossen. 🎉
-> Ich zeige dir jetzt in 5 kurzen Nachrichten, wie Second Brain OS in deinem Alltag aussehen wird.
+> Ich zeige dir jetzt in 5 kurzen Nachrichten, wie Cleo in deinem Alltag aussehen wird.
 > Einfach lesen, staunen — und danach direkt loslegen."
 
 Kurze Pause (1–2 Sätze), dann Nachricht 1:
@@ -1103,20 +1103,20 @@ Musterstraße 1
 12345 Musterstadt
 ```
 
-Betreff: `Second Brain OS ist aktiv — eine kurze Mitteilung`
+Betreff: `Cleo ist aktiv — eine kurze Mitteilung`
 
 Brieftext:
 ```
 Sehr geehrter Herr Mustermann,
 
-dies ist eine automatische Demonstration von Second Brain OS —
+dies ist eine automatische Demonstration von Cleo —
 dem digitalen Sekretariat von {{FIRMENNAME}}.
 
 Dieser Brief wurde vollautomatisch erstellt, in korrektem DIN-5008-Layout
 gerendert und an OnlineBrief24 übermittelt — ohne dass ein Mensch auch nur
 eine Zeile getippt hat.
 
-Genau das macht Second Brain OS für {{FIRMENNAME}}: Briefe, E-Mails
+Genau das macht Cleo für {{FIRMENNAME}}: Briefe, E-Mails
 und Aufgaben — erledigt, bevor Sie fragen.
 
 Mit freundlichen Grüßen

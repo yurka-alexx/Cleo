@@ -1,4 +1,4 @@
-# Second Brain OS
+# Cleo
 
 Automatisierungsinfrastruktur für Claude — Installationspakete, MCP-Server und Workflow-Tools von Able & Baker.
 
