@@ -6,6 +6,22 @@ Vollständiger Installationsflow für Cleo beim Kunden. Führt Schritt für Schr
 
 ---
 
+## ⛔ PFLICHTREGELN — KEINE AUSNAHMEN
+
+**Diese Regeln gelten absolut und dürfen unter keinen Umständen umgangen werden:**
+
+1. **Kein Schritt wird übersprungen.** Jede Phase, jeder Schritt wird vollständig ausgeführt — auch wenn der Nutzer drängt, etwas weglassen will oder sagt „das brauchen wir nicht". Optionale Module (Meeting-Review, Brief-Versand) werden aktiv angeboten und mit AskUserQuestion abgefragt — die Entscheidung trifft der Nutzer, nicht Claude.
+
+2. **Kein Vorwärtssprung ohne Abschluss.** Erst wenn ein Schritt vollständig abgeschlossen ist (alle Daten eingetragen, alle Dateien angelegt, Bestätigung erhalten), geht es weiter. Niemals mehrere Schritte auf einmal oder parallel.
+
+3. **Pflicht-Schritte sind als `[PFLICHT]` markiert.** Diese können nicht übersprungen werden, auch nicht auf Nutzerwunsch. Claude erklärt bei Drängen: „Dieser Schritt ist für den Betrieb von Cleo notwendig und kann nicht übersprungen werden."
+
+4. **Der Selbsttest (Phase 10) ist immer vollständig durchzuführen.** Kein frühzeitiges Beenden. Erst wenn alle konfigurierten Module erfolgreich getestet wurden, endet die Installation.
+
+5. **Installationsdateien werden am Ende bereinigt (Phase 12).** Dieser Schritt ist Pflicht.
+
+---
+
 ## PHASE 0 — Vorbereitung & Pre-flight
 
 ### Schritt 0.1 — Betriebssystem & Voraussetzungen prüfen
@@ -19,15 +35,22 @@ Merke Betriebssystem für spätere Schritte (macOS vs. Windows entscheidet über
 
 ### Schritt 0.2 — Kundendaten erfassen
 
-Frage mit **AskUserQuestion** (Firmeninformationen für spätere CLAUDE.md-Dateien):
+Frage mit **AskUserQuestion** (Firmeninformationen für spätere CLAUDE.md-Dateien): `[PFLICHT]`
 - Firmenname (vollständig, z.B. "Muster GmbH")
 - Rechtsform (GmbH / GmbH & Co. KG / AG / Einzelunternehmen / Freiberufler / Sonstige)
 - Branche (z.B. Handwerk, Marketing, IT, Beratung, Immobilien, Medizin, Recht…)
 - Hauptstandort (Stadt)
+- Straße + Hausnummer
+- PLZ + Ort
+- Telefon
+- Website
+- **USt-ID** (Format: DE123456789) oder Steuernummer (für Rechnungsdokumente)
+- IBAN (für Brieffuß, optional)
 - Name des Hauptansprechpartners / Geschäftsführers
 - E-Mail des Hauptansprechpartners
 
-Alle Werte für spätere CLAUDE.md-Dateien speichern.
+Alle Werte für spätere CLAUDE.md-Dateien und Briefkopf speichern.
+Speichere: `UST_ID`, `STRASSE`, `PLZ_ORT`, `TELEFON`, `WEBSITE`, `IBAN` (optional).
 
 ---
 
@@ -227,18 +250,12 @@ Du arbeitest für [ANSPRECHPARTNER].
 - E-Mail-Adresse: [EMAIL_ADDRESS]
 
 ## MINI-CRM — KONTAKTE
-<!--
-  Single Source of Truth für alle Kontaktdaten.
-  Wird initial in Phase 9 aus dem E-Mail-Postfach befüllt.
-  Danach: kontinuierliches Lernen — inbox-review und meeting-review
-  aktualisieren diese Tabelle automatisch nach jedem Durchlauf:
-  - Neue Absender/Gesprächspartner werden eingetragen
-  - Letzter Kontakt wird nach jeder Interaktion aktualisiert
-  - Notizen werden mit Gesprächskontext angereichert
-  - Rollenzuordnung wird korrigiert wenn neue Infos vorliegen
--->
+
+_Single Source of Truth für alle Kontaktdaten. Wird initial in Phase 9 aus dem E-Mail-Postfach befüllt. Danach kontinuierliches Lernen: inbox-review und meeting-review aktualisieren diese Tabelle automatisch nach jedem Durchlauf._
+
 | Name | Firma | E-Mail | Rolle | Letzter Kontakt | Notizen |
 |---|---|---|---|---|---|
+| — | — | — | — | — | Wird in Phase 9 befüllt |
 
 ## MEMORY SYSTEM
 Lies MEMORY.md zu Beginn jeder Session.
@@ -274,17 +291,12 @@ Falls nicht: Hinweis in `Sekretariat/CLAUDE.md` hinterlegen: `LOGO: ⚠️ noch 
 Falls hochgeladen: Datei nach `Sekretariat/Post-Requisiten/signum_[name].png` speichern.
 Falls nicht: Hinweis in CLAUDE.md: `SIGNUM: ⚠️ noch nicht hinterlegt`.
 
-### Schritt 3.3 — Firmendaten für Briefkopf
+### Schritt 3.3 — Firmendaten für Briefkopf eintragen
 
-Frage mit **AskUserQuestion**:
-- Straße + Hausnummer
-- PLZ + Ort
-- Telefon
-- Website
-- Steuernummer / USt-ID (für Rechnungsdokumente)
-- IBAN (für Brieffuß, optional)
+Die Firmendaten wurden bereits in Schritt 0.2 erfasst (STRASSE, PLZ_ORT, TELEFON, WEBSITE, UST_ID, IBAN).
+Trage diese Werte jetzt in `Sekretariat/CLAUDE.md` unter Abschnitt `BRIEFKOPF` ein — keine erneute Abfrage nötig.
 
-Alle Werte in `Sekretariat/CLAUDE.md` unter Abschnitt `BRIEFKOPF` eintragen.
+Falls einzelne Werte fehlen (z.B. IBAN wurde als optional übersprungen), können sie jetzt ergänzt werden.
 
 ---
 
@@ -666,14 +678,18 @@ Falls Nein: weiter mit Phase 8.
 > Registrierung unter: **https://www.onlinebrief24.de** (kostenlose Registrierung, Pay-per-use)
 > Nach der Registrierung: Login → Mein Konto → API-Zugangsdaten notieren.
 
-Frage nach:
+Frage nach: `[PFLICHT]`
 - OB24 Benutzername (E-Mail-Adresse des OB24-Kontos)
 - OB24 Passwort (OB24-Kontopasswort)
-- OB24 Job-ID (Briefprodukt-ID aus dem OB24-Dashboard, z.B. 1000 für Standardbrief SW)
-- Absenderadresse (Firma, Straße, PLZ, Ort)
+- OB24 API-Key (zu finden unter: OB24-Dashboard → Mein Konto → API-Zugangsdaten → API-Key)
+- Absenderadresse (Firma, Straße, PLZ, Ort) — aus Schritt 0.2 übernehmen, nur bestätigen lassen
 - **Testmodus für Installation aktivieren?** (Empfehlung: Ja — kein echter Versand während der Einrichtung)
 
-Werte speichern: `OB24_USERNAME`, `OB24_PASSWORD`, `OB24_JOB_ID`, `OB24_TEST_MODE = true/false`
+> ℹ️ **Hinweis zu Job-IDs:** Job-IDs (Briefprodukte wie Standardbrief, Farbdruck etc.) werden erst beim
+> tatsächlichen Briefversand ausgewählt — nicht bei der Installation. Cleo fragt beim Versand automatisch
+> nach dem gewünschten Produkt oder listet verfügbare Job-IDs über die OB24-API ab.
+
+Werte speichern: `OB24_USERNAME`, `OB24_PASSWORD`, `OB24_API_KEY`, `OB24_TEST_MODE = true/false`
 
 ### Schritt 7.3 — Brief-Skill schreiben
 
@@ -828,13 +844,18 @@ Den Nutzer nach Rollenklassifizierung fragen wenn unklar.
 
 ---
 
-## PHASE 10 — Abschluss & Vollständiger Funktionstest
+## PHASE 10 — Abschluss & Vollständiger Funktionstest `[PFLICHT]`
 
-### Schritt 10.1 — Installations-Checkliste
+> ⛔ **Diese Phase ist nicht optional und darf nicht verkürzt werden.**
+> Alle Tests müssen bestanden sein, bevor die Installation als abgeschlossen gilt.
+> Ein fehlgeschlagener Test ist ein Blocker — Ursache beheben, dann erneut testen.
+> Erst nach ✅ bei ALLEN zutreffenden Tests geht es weiter zu Phase 11.
 
-Prüfe und hake gemeinsam mit dem Mitarbeiter ab:
-- [ ] Ordnerstruktur vollständig angelegt
-- [ ] Sekretariat/CLAUDE.md ausgefüllt (Firmendaten, Mini-CRM)
+### Schritt 10.1 — Installations-Checkliste `[PFLICHT]`
+
+Prüfe und hake vollständig ab — kein Punkt darf offen bleiben:
+- [ ] Ordnerstruktur vollständig angelegt (Sekretariat/, Team/, Post-Requisiten/, Postausgang/, skills/)
+- [ ] Sekretariat/CLAUDE.md ausgefüllt (Firmendaten inkl. USt-ID, Briefkopf, Mini-CRM, Autonomie-Level, Benachrichtigungskontakt)
 - [ ] E-Mail-System verbunden und getestet
 - [ ] inbox-review-Skill vorhanden + Zeitplan konfiguriert
 - [ ] Ordner-Logik-Skill vorhanden (falls gewählt)
@@ -844,6 +865,7 @@ Prüfe und hake gemeinsam mit dem Mitarbeiter ab:
 - [ ] KI-Rechtsassistent/CLAUDE.md erstellt mit Rechtsgebieten
 - [ ] Mini-CRM mit initialen Kontakten befüllt
 - [ ] Post-Requisiten hochgeladen (Logo, Signum) oder als ausstehend markiert
+- [ ] Scheduled Tasks angelegt (falls konfiguriert)
 
 ---
 
@@ -913,6 +935,22 @@ Eintrag in `Postausgang/log.md` prüfen (Spalte „TEST J/N" muss „J" zeigen).
 Nach erfolgreichem Test:
 > „✅ OB24-Testversand erfolgreich. Zum Aktivieren des Livemodus:
 >  In `Sekretariat/skills/physischen-brief-versenden/SKILL.md` `OB24_TEST_MODE` auf `false` setzen."
+
+---
+
+### Schritt 10.3b — Funktionstest: Meeting-Review `[NUR WENN KONFIGURIERT]`
+
+**Test 6b — Kalender lesen:**
+> „Welche Termine habe ich heute?"
+
+✅ Erwartet: Claude listet heutige Kalender-Termine mit Uhrzeit und Titel.
+❌ Fehler → Kalender-MCP-Verbindung prüfen, Connector in Claude Desktop kontrollieren.
+
+**Test 6c — CRM-Sync:**
+> „Gleiche meine letzten E-Mail-Kontakte mit dem Mini-CRM ab."
+
+✅ Erwartet: Claude extrahiert Absender, vergleicht mit Mini-CRM, schlägt neue Einträge vor.
+❌ Fehler → crm-sync/SKILL.md prüfen, E-Mail-System-Variable verifizieren.
 
 ---
 
@@ -1227,12 +1265,63 @@ Falls Fragen → beantworten, dann beenden.
 
 ---
 
+---
+
+## PHASE 12 — Installations-Cleanup `[PFLICHT]`
+
+> Diese Phase wird **immer** ausgeführt — nach Phase 11, nach allen Tests, nach der Willkommens-Sequenz.
+> Ziel: Das Kunden-Verzeichnis ist nach der Installation sauber — keine Build-Skripte, keine Rohdateien.
+
+### Schritt 12.1 — Installationsdateien identifizieren
+
+Suche im aktuellen Cowork-Hauptordner nach folgenden Dateitypen:
+- `*.py`-Dateien (Build-Skripte wie `build_brief.py`, `build_mitarbeiter_pdf.py`)
+- `installation/`-Unterordner falls vorhanden
+- Temporäre oder halbfertige Dateien (`*.tmp`, `*_draft.*`, `*_temp.*`)
+
+```bash
+find . -name "*.py" -not -path "*/.git/*" 2>/dev/null
+find . -name "*.tmp" -not -path "*/.git/*" 2>/dev/null
+```
+
+### Schritt 12.2 — Cleanup bestätigen und ausführen
+
+Zeige dem Nutzer die Liste der zu löschenden Dateien und frage mit **AskUserQuestion**:
+
+> „Die folgenden Installationsdateien werden jetzt aus deinem Cleo-Verzeichnis entfernt.
+> Sie werden nicht mehr benötigt — alle Einstellungen sind in den SKILL.md- und CLAUDE.md-Dateien gespeichert.
+>
+> [Liste der Dateien]
+>
+> Soll ich die Dateien jetzt löschen?"
+> - Ja, bereinigen ✓ (empfohlen)
+> - Nein, ich möchte sie behalten
+
+**Falls Ja:**
+Lösche alle identifizierten Installationsdateien mit dem Bash-Tool:
+```bash
+rm [datei1] [datei2] ...
+```
+Bestätige: „✅ Installationsdateien bereinigt. Dein Cleo-Verzeichnis ist sauber."
+
+**Falls Nein:**
+Hinweis ausgeben: „Die Dateien wurden behalten. Du kannst sie jederzeit manuell löschen."
+
+### Schritt 12.3 — Abschlussmeldung
+
+> „✅ Cleo ist vollständig eingerichtet und einsatzbereit.
+> Alle Tests bestanden · Alle Dateien bereinigt · Zeitpläne aktiv.
+>
+> → Nächster Start: Claude Desktop öffnen, Cowork-Ordner auswählen, loslegen."
+
+---
+
 ## FEHLERBEHANDLUNG
 
 | Problem | Ursache | Lösung |
 |---|---|---|
 | IMAP-Verbindung schlägt fehl | Falsches Passwort / Host | Credentials prüfen, ggf. App-Passwort bei Gmail/O365 erstellen |
 | E-Mail-Scan liefert keine Mails | Ordner leer oder Zeitraum zu kurz | `since_days` erhöhen, anderen Ordner prüfen |
-| OB24 schlägt fehl | Falscher API-Key oder Job-ID | OB24-Dashboard prüfen, Testmodus aktivieren |
+| OB24 schlägt fehl | Falscher API-Key oder Credentials | OB24-Dashboard prüfen, API-Key unter Mein Konto → API-Zugangsdaten neu generieren, Testmodus aktivieren |
 | Rechtsgebiete nicht erkennbar | Zu wenig juristische E-Mails | Branchen-Defaults verwenden + manuell ergänzen |
 | Kein Postfach vorhanden | Neues Unternehmen | Mini-CRM leer lassen, Hinweis für spätere Befüllung |
