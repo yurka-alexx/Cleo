@@ -354,10 +354,11 @@ def installation(c):
     steps = [
         (0, "Vorbereitung & Pre-flight",
          ["Betriebssystem prüfen: macOS oder Windows",
+          "Cleo herunterladen: install_mac.sh (macOS) oder install_windows.ps1 — Ordner 'Cleo' wird angelegt",
           "Claude Desktop installieren: claude.ai/download",
-          "Cowork-Ordner in Claude Desktop als Arbeitsordner einrichten",
+          "Cowork-Ordner ('Cleo') in Claude Desktop als Arbeitsordner einrichten",
           "OB24-Konto anlegen (falls Briefversand gewuenscht): onlinebrief24.de",
-          "Kundendaten erfassen: Firmenname, Rechtsform, Branche, Ansprechpartner",
+          "Kundendaten erfassen: Firmenname, Rechtsform, Branche, Standort, Straße/PLZ, Telefon, Website, USt-ID",
           "Assistenz-Identitaet festlegen: Name & Geschlecht (z.B. Clara / weiblich)"]),
         (1, "E-Mail-System verbinden",
          ["Wahl: Standard-IMAP/SMTP  |  Gmail  |  Office 365  |  Keines",
@@ -371,7 +372,7 @@ def installation(c):
         (3, "Post-Requisiten hochladen",
          ["Firmenlogo als PNG (transparenter Hintergrund) -> logo.png",
           "Unterschrift/Signum als PNG -> signum_[name].png",
-          "Briefkopf-Daten: Straße, PLZ, Telefon, Website, IBAN"]),
+          "Firmendaten (Adresse, USt-ID, IBAN) werden aus Phase 0 übernommen — keine erneute Abfrage"]),
         (4, "Postfach-Briefing einrichten",
          ["Zeitfenster: 24h / 48h / 72h  (Standard: 24h — täglich morgens)",
           "Zeitplan: täglich 08:00 Uhr (empfohlen) oder manuell",
@@ -394,7 +395,8 @@ def installation(c):
           "API-Key für externes CRM eingeben (falls gewaehlt)"]),
         (7, "Briefversand OB24 (optional)",
          ["Voraussetzung: OB24-Konto vorhanden (onlinebrief24.de -> kostenlos registrieren)",
-          "OB24-Zugangsdaten eingeben: Benutzername, Passwort, Job-ID (aus OB24-Dashboard)",
+          "OB24-Zugangsdaten eingeben: Benutzername, Passwort, API-Key (Mein Konto → API-Zugangsdaten)",
+          "Hinweis: Job-IDs (Briefprodukte) werden beim Versand gewählt — nicht bei Installation",
           "Testmodus beim ersten Start aktivieren — kein echter Versand während Einrichtung",
           "Preis wird vor jedem Versand angezeigt -> erst mit Bestaetigung senden"]),
         (8, "KI-Rechtsassistent einrichten",
@@ -405,10 +407,15 @@ def installation(c):
          ["Claude scannt 180 Tage E-Mail-Verlauf",
           "Top-50-Kontakte: Name, Firma, E-Mail, letzter Kontakt extrahiert",
           "Kontakttabelle in Sekretariat/CLAUDE.md eingetragen"]),
-        (10, "Abschluss & Funktionstest",
-         ["8 Tests: E-Mail lesen, Postfach-Briefing, CRM, Brief-PDF, OB24-Preis,",
-          "  OB24-Versand (Testmodus), KI-Rechtsassistent-Rechtsgebiete, Formelles Schreiben",
+        (10, "Abschluss & Vollständiger Selbsttest [PFLICHT]",
+         ["10 Tests: E-Mail lesen, Postfach-Briefing, CRM, Kalender (falls konfiguriert),",
+          "  CRM-Sync, Brief-PDF, OB24-Preis, OB24-Testversand, Rechtsassistent, Formelles Schreiben",
+          "Kein Schritt kann übersprungen werden — alle Tests müssen bestanden sein",
           "Uebergabedokument UEBERGABE.md wird automatisch erstellt"]),
+        (12, "Cleanup & Abschluss [PFLICHT]",
+         ["Installationsdateien (*.py, Temp-Dateien) werden aus dem Cleo-Ordner gelöscht",
+          "Claude listet Dateien vor dem Löschen — Bestätigung erforderlich",
+          "Abschlussmeldung: Cleo ist einsatzbereit"]),
     ]
 
     pg = 4
@@ -502,7 +509,7 @@ def troubleshooting(c, S):
         ("Tagesabschluss findet keine Meetings",
          "Claude Desktop -> Connectors -> Google Kalender verbinden. Danach Claude neu starten."),
         ("OB24-Versand schlaegt fehl",
-         "OB24-Dashboard: Saldo prüfen, API-Key und Job-ID verifizieren. Testmodus aktivieren."),
+         "OB24-Dashboard: Saldo prüfen, API-Key verifizieren (Mein Konto → API-Zugangsdaten). Testmodus aktivieren."),
         ("Autonome Termine werden nicht angelegt",
          "In meeting-review/SKILL.md: AUTO_CREATE_EVENTS = true setzen und Kalender verbinden."),
         ("Alte Entwürfe werden nicht bereinigt",
@@ -549,7 +556,8 @@ def troubleshooting(c, S):
         "Briefversand OB24 konfiguriert (falls gewuenscht)",
         "KI-Rechtsassistent mit Rechtsgebieten eingerichtet",
         "Mini-CRM aus 180 Tagen E-Mail-Verlauf befuellt",
-        "Alle 8 Funktionstests bestanden",
+        "Alle 10 Funktionstests bestanden (Phase 10 vollständig)",
+        "Installationsdateien bereinigt (Phase 12 — Cleanup)",
         "Uebergabedokument UEBERGABE.md erstellt",
     ]
     half = (len(items)+1)//2
@@ -691,12 +699,15 @@ def install_guide(c):
         y -= 8
 
     # ── BLOCK 1 ───────────────────────────────────────────────────────────
-    block("① Vorbereitung  (5 Min.)", DARK_BLUE, [
+    block("① Vorbereitung  (10 Min.)", DARK_BLUE, [
+        ("step", "Cleo herunterladen — Installer aus dem GitHub-Repo ausführen:"),
+        ("cmd",  "macOS:   bash install_mac.sh   →  Ordner ~/Cleo wird angelegt"),
+        ("cmd",  "Windows: install_windows.ps1 (Rechtsklick → Mit PowerShell ausführen)"),
         ("step", "Claude Desktop herunterladen & installieren"),
         ("url",  "https://claude.ai/download"),
         ("step", "Claude Pro-Abo prüfen: claude.ai → Account → Subscription"),
-        ("step", "Cowork-Ordner erstellen (z.B. Desktop → 'Cleo-[Firmenname]')"),
-        ("step", "Claude Desktop → Einstellungen → Ordner hinzufügen → Ordner wählen"),
+        ("step", "Claude Desktop → Einstellungen → Ordner hinzufügen → Ordner '~/Cleo' wählen"),
+        ("warn", "Installer legt den Cleo-Ordner automatisch an — nichts manuell erstellen"),
     ], note="Ohne aktives Pro-Abo läuft Cleo nicht")
 
     # ── BLOCK 2 ───────────────────────────────────────────────────────────
@@ -730,9 +741,10 @@ def install_guide(c):
     ], note="Pocket zeichnet alle Gespräche & Meetings des Tages auf")
 
     # ── BLOCK 5 ───────────────────────────────────────────────────────────
-    block("⑤ Abschluss & Übergabe  (15 Min.)", GREEN_D, [
+    block("⑤ Abschluss & Übergabe  (20 Min.)", GREEN_D, [
         ("step", "Firmenlogo (logo.png) + Unterschrift (signum_name.png) in Sekretariat/Post-Requisiten/ ablegen"),
-        ("step", "8 Funktionstests: Claude leitet automatisch durch (Phase 10 im Installationsflow)"),
+        ("step", "10 Funktionstests: Claude leitet automatisch durch (Phase 10 — PFLICHT, darf nicht verkürzt werden)"),
+        ("step", "Cleanup: Claude löscht Installationsdateien (*.py, Temp) nach Bestätigung (Phase 12)"),
         ("step", "Übergabedokument öffnen: UEBERGABE.md im Cowork-Ordner"),
         ("step", "Kurze Einweisung: Wichtigste Befehle zeigen (Seite 8 dieser Anleitung)"),
         ("warn", "Förderung (BAFA): Antrag VOR Installation stellen — rückwirkend nicht möglich!"),
