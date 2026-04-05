@@ -1,143 +1,197 @@
 # ============================================================
-#  Cleo — Installer für Windows (PowerShell)
+#  Cleo - Installer fuer Windows
+#  Schritt 1 von 2: Dateien herunterladen und entpacken
 #
-#  Variante A (empfohlen): Skript + Cleo.zip im selben Ordner ablegen,
-#  dann ausführen. Kein Internet-Zugang nötig.
-#
-#  Variante B: GitHub-Token als Umgebungsvariable setzen:
-#  $env:GH_TOKEN = "ghp_xxx"; .\install_windows.ps1
-#
-#  Bezugsquelle Cleo.zip: Erhalte die Datei von deinem
-#  Installationspartner (Able & Baker GmbH).
-#
-#  Ausführen: Rechtsklick → "Mit PowerShell ausführen"
-#  Oder: powershell -ExecutionPolicy Bypass -File install_windows.ps1
+#  Ausfuehren: Rechtsklick -> Mit PowerShell ausfuehren
+#  Optionen:
+#    $env:GH_TOKEN="ghp_..."; .\install_windows.ps1   (privates Repo)
+#    $env:CLEO_ZIP="C:\Pfad\Cleo.zip"; .\install_windows.ps1
 # ============================================================
 
 $ErrorActionPreference = "Stop"
+$RepoOwner = "yurka-alexx"
+$RepoName  = "Cleo"
+$Branch    = "main"
+$RepoUrl   = "https://github.com/$RepoOwner/$RepoName/archive/refs/heads/$Branch.zip"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$TmpDir    = Join-Path $env:TEMP ("cleo_install_" + [System.IO.Path]::GetRandomFileName())
+$ZipFile   = Join-Path $TmpDir "cleo.zip"
 
-$RepoUrl   = "https://github.com/yurka-alexx/Cleo/archive/refs/heads/main.zip"
-$TargetDir = "$env:USERPROFILE\Cleo"
-$TmpDir    = "$env:TEMP\cleo_install_$(Get-Random)"
-$ZipFile   = "$TmpDir\cleo.zip"
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+New-Item -ItemType Directory -Path $TmpDir -Force | Out-Null
 
+# -- Banner --------------------------------------------------
+Clear-Host
 Write-Host ""
-Write-Host "╔══════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║     Cleo — Installation (Windows)    ║" -ForegroundColor Cyan
-Write-Host "╚══════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "  +--------------------------------------------------+"
+Write-Host "  |       Cleo - Installation (Windows)              |"
+Write-Host "  |       Ihr digitales Sekretariat                  |"
+Write-Host "  +--------------------------------------------------+"
 Write-Host ""
 
-# ── Zielordner prüfen ────────────────────────────────────────
+# -- Zielordner festlegen ------------------------------------
+Write-Host "  Wo soll Cleo installiert werden?"
+Write-Host "  [Enter] fuer Standard: $env:USERPROFILE\Cleo"
+Write-Host ""
+$UserDir = Read-Host "  Verzeichnis"
+if ([string]::IsNullOrWhiteSpace($UserDir)) {
+    $UserDir = Join-Path $env:USERPROFILE "Cleo"
+}
+$TargetDir = $UserDir
+Write-Host ""
+Write-Host "  OK: Installationsordner: $TargetDir"
+Write-Host ""
+
+# -- Bestehenden Ordner pruefen ------------------------------
 if (Test-Path $TargetDir) {
-    Write-Host "⚠️  Der Ordner '$TargetDir' existiert bereits." -ForegroundColor Yellow
-    $confirm = Read-Host "   Überschreiben? (j/n)"
-    if ($confirm -ne "j" -and $confirm -ne "J") {
-        Write-Host "❌ Installation abgebrochen." -ForegroundColor Red
+    Write-Host "  WARNUNG: Der Ordner existiert bereits."
+    $Confirm = Read-Host "  Ueberschreiben? (j/n)"
+    Write-Host ""
+    if ($Confirm -notmatch "^[jJ]$") {
+        Write-Host "  Abgebrochen."
+        Remove-Item -Recurse -Force $TmpDir -ErrorAction SilentlyContinue
         exit 1
     }
     Remove-Item -Recurse -Force $TargetDir
 }
 
-New-Item -ItemType Directory -Path $TmpDir | Out-Null
-
-# ── Quelle ermitteln ─────────────────────────────────────────
-$LocalZip = $null
-$ZipNames = @("Cleo.zip", "cleo.zip", "Cleo-main.zip", "cleo-main.zip")
-
-# Neben dem Skript suchen
-foreach ($name in $ZipNames) {
-    $candidate = Join-Path $ScriptDir $name
-    if (Test-Path $candidate) {
-        $LocalZip = $candidate
-        Write-Host "📦 Lokale Datei gefunden: $LocalZip"
-        break
-    }
+# -- Claude Desktop pruefen ----------------------------------
+$ClaudeInstalled = Test-Path "$env:LOCALAPPDATA\Programs\Claude\Claude.exe"
+if (-not $ClaudeInstalled) {
+    $ClaudeInstalled = Test-Path "$env:ProgramFiles\Claude\Claude.exe"
 }
-
-# Im Downloads-Ordner suchen
-if (-not $LocalZip) {
-    foreach ($name in $ZipNames) {
-        $candidate = Join-Path "$env:USERPROFILE\Downloads" $name
-        if (Test-Path $candidate) {
-            $LocalZip = $candidate
-            Write-Host "📦 Lokale Datei gefunden: $LocalZip"
-            break
-        }
-    }
-}
-
-if ($LocalZip) {
-    # Variante A — lokale Datei
-    Copy-Item $LocalZip $ZipFile
-    Write-Host "✅ Lokale Datei wird verwendet."
-
-} elseif ($env:GH_TOKEN) {
-    # Variante B — GitHub mit Token
-    Write-Host "⬇️  Lade Cleo von GitHub herunter (mit Token)..."
-    $headers = @{ Authorization = "token $env:GH_TOKEN" }
-    try {
-        Invoke-WebRequest -Uri $RepoUrl -OutFile $ZipFile -Headers $headers -UseBasicParsing
-        Write-Host "✅ Download abgeschlossen."
-    } catch {
-        Write-Host "❌ Download fehlgeschlagen. Token prüfen oder lokale Cleo.zip verwenden." -ForegroundColor Red
-        Remove-Item -Recurse -Force $TmpDir
-        exit 1
-    }
-
+if ($ClaudeInstalled) {
+    Write-Host "  OK: Claude Desktop ist installiert."
 } else {
+    Write-Host "  HINWEIS: Claude Desktop nicht gefunden."
+    Write-Host "  -> Bitte jetzt installieren: https://claude.ai/download"
     Write-Host ""
-    Write-Host "❌ Keine Installationsquelle gefunden." -ForegroundColor Red
+    Write-Host "  Skript laeuft weiter - Claude Desktop vor Schritt 3 installieren."
     Write-Host ""
-    Write-Host "   Optionen:"
-    Write-Host "   1. Lege 'Cleo.zip' neben dieses Skript oder in Downloads"
-    Write-Host "      → Datei erhältlich bei Able & Baker GmbH"
+    Read-Host "  Enter druecken zum Fortfahren"
     Write-Host ""
-    Write-Host "   2. Führe das Skript mit GitHub-Token aus:"
-    Write-Host "      `$env:GH_TOKEN = 'ghp_...'; .\install_windows.ps1"
+}
+
+# -- Quelle ermitteln ----------------------------------------
+$SourceUsed = ""
+
+# Prio 1: Umgebungsvariable
+if ($env:CLEO_ZIP -and (Test-Path $env:CLEO_ZIP)) {
+    Copy-Item $env:CLEO_ZIP $ZipFile
+    $SourceUsed = "Lokale Datei: $env:CLEO_ZIP"
+}
+
+# Prio 2: Cleo.zip lokal suchen
+if (-not $SourceUsed) {
+    $ZipNames = @("Cleo.zip","cleo.zip","Cleo-main.zip","cleo-main.zip")
+    $SearchDirs = @($ScriptDir, "$env:USERPROFILE\Downloads", "$env:USERPROFILE\Desktop")
+    foreach ($dir in $SearchDirs) {
+        foreach ($name in $ZipNames) {
+            $candidate = Join-Path $dir $name
+            if (Test-Path $candidate) {
+                Copy-Item $candidate $ZipFile
+                $SourceUsed = "Lokale Datei: $candidate"
+                break
+            }
+        }
+        if ($SourceUsed) { break }
+    }
+}
+
+# Prio 3: GitHub oeffentlich
+if (-not $SourceUsed) {
+    Write-Host "  Lade Cleo von GitHub herunter..."
+    try {
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile($RepoUrl, $ZipFile)
+        # Pruefen ob echte ZIP (PK-Header)
+        $bytes = [System.IO.File]::ReadAllBytes($ZipFile)
+        if ($bytes[0] -eq 0x50 -and $bytes[1] -eq 0x4B) {
+            $SourceUsed = "GitHub (oeffentlich)"
+        } else {
+            Remove-Item $ZipFile -ErrorAction SilentlyContinue
+        }
+    } catch {
+        Remove-Item $ZipFile -ErrorAction SilentlyContinue
+    }
+}
+
+# Prio 4: GitHub mit Token
+if (-not $SourceUsed -and $env:GH_TOKEN) {
+    Write-Host "  Lade Cleo von GitHub herunter (mit Token)..."
+    try {
+        $headers = @{ Authorization = "token $env:GH_TOKEN" }
+        Invoke-WebRequest -Uri $RepoUrl -Headers $headers -OutFile $ZipFile
+        $bytes = [System.IO.File]::ReadAllBytes($ZipFile)
+        if ($bytes[0] -eq 0x50 -and $bytes[1] -eq 0x4B) {
+            $SourceUsed = "GitHub (Token)"
+        } else {
+            Remove-Item $ZipFile -ErrorAction SilentlyContinue
+            Write-Host "  FEHLER: Token ungueltig oder kein Zugriff."
+        }
+    } catch {
+        Remove-Item $ZipFile -ErrorAction SilentlyContinue
+    }
+}
+
+if (-not $SourceUsed) {
     Write-Host ""
-    Remove-Item -Recurse -Force $TmpDir
-    Read-Host "Drücke Enter zum Beenden"
+    Write-Host "  FEHLER: Keine Installationsquelle gefunden."
+    Write-Host ""
+    Write-Host "  Optionen:"
+    Write-Host "  1. Lege Cleo.zip neben dieses Skript, in Downloads oder Desktop"
+    Write-Host "     Datei erhaeltlich bei Able & Baker GmbH"
+    Write-Host ""
+    Write-Host "  2. GitHub-Token mitgeben:"
+    Write-Host "     > `$env:GH_TOKEN='ghp_...'; .\install_windows.ps1"
+    Write-Host ""
+    Remove-Item -Recurse -Force $TmpDir -ErrorAction SilentlyContinue
     exit 1
 }
 
-# ── Entpacken ────────────────────────────────────────────────
-Write-Host "📦 Entpacke..."
+Write-Host "  OK: Quelle: $SourceUsed"
+Write-Host ""
+
+# -- Entpacken -----------------------------------------------
+Write-Host "  Entpacke..."
 Expand-Archive -Path $ZipFile -DestinationPath $TmpDir -Force
 
 # cleo/-Unterordner finden
-$CleoSubfolder = Get-ChildItem -Path $TmpDir -Recurse -Directory -Filter "cleo" | Select-Object -First 1
+$Extracted = Get-ChildItem -Path $TmpDir -Recurse -Directory -Filter "cleo" |
+             Where-Object { $_.FullName -notlike "*\.git*" } |
+             Select-Object -First 1
 
-if (-not $CleoSubfolder) {
-    Write-Host "❌ Fehler: cleo/-Unterordner nicht in der ZIP-Datei gefunden." -ForegroundColor Red
-    Write-Host "   Bitte eine gültige Cleo.zip von deinem Installationspartner anfordern."
-    Remove-Item -Recurse -Force $TmpDir
-    Read-Host "Drücke Enter zum Beenden"
+if (-not $Extracted) {
+    Write-Host "  FEHLER: cleo/-Unterordner nicht in der ZIP gefunden."
+    Write-Host "  Bitte eine gueltige Cleo.zip von Able & Baker anfordern."
+    Remove-Item -Recurse -Force $TmpDir -ErrorAction SilentlyContinue
     exit 1
 }
 
-# ── Installieren ─────────────────────────────────────────────
-New-Item -ItemType Directory -Path $TargetDir | Out-Null
-Copy-Item -Path "$($CleoSubfolder.FullName)\*" -Destination $TargetDir -Recurse
-Write-Host "✅ Dateien nach '$TargetDir' kopiert."
+# -- Installieren --------------------------------------------
+New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+Copy-Item -Path (Join-Path $Extracted.FullName "*") -Destination $TargetDir -Recurse -Force
+Remove-Item -Recurse -Force $TmpDir -ErrorAction SilentlyContinue
 
-# ── Aufräumen ────────────────────────────────────────────────
-Remove-Item -Recurse -Force $TmpDir
-
-# ── Fertig ───────────────────────────────────────────────────
-Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║  ✅  Cleo wurde erfolgreich installiert!                 ║" -ForegroundColor Green
-Write-Host "╠══════════════════════════════════════════════════════════╣" -ForegroundColor Green
-Write-Host "║                                                          ║" -ForegroundColor Green
-Write-Host "║  Speicherort: $env:USERPROFILE\Cleo" -ForegroundColor Green
-Write-Host "║                                                          ║" -ForegroundColor Green
-Write-Host "║  Nächste Schritte:                                       ║" -ForegroundColor Green
-Write-Host "║  1. Claude Desktop öffnen                               ║" -ForegroundColor Green
-Write-Host "║  2. Ordner Cleo als Arbeitsordner auswählen             ║" -ForegroundColor Green
-Write-Host "║  3. Cleo-Installation starten                           ║" -ForegroundColor Green
-Write-Host "║                                                          ║" -ForegroundColor Green
-Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "  OK: Dateien installiert."
 Write-Host ""
 
-Read-Host "Drücke Enter zum Beenden"
+# -- Fertig --------------------------------------------------
+Write-Host "  +--------------------------------------------------+"
+Write-Host "  |  FERTIG: Cleo wurde erfolgreich installiert!     |"
+Write-Host "  +--------------------------------------------------+"
+Write-Host "  |                                                  |"
+Write-Host "  |  Speicherort: $TargetDir"
+Write-Host "  |                                                  |"
+Write-Host "  |  Naechste Schritte:                              |"
+Write-Host "  |  1. Claude Desktop oeffnen                       |"
+Write-Host "  |  2. Ordner oeffnen: $TargetDir"
+Write-Host "  |  3. Cleo-Installation starten                    |"
+Write-Host "  |     (Claude tippt automatisch die Anleitung)     |"
+Write-Host "  |                                                  |"
+Write-Host "  +--------------------------------------------------+"
+Write-Host ""
+
+# Ordner im Explorer oeffnen
+Start-Process explorer.exe $TargetDir -ErrorAction SilentlyContinue
+
+Read-Host "  Enter druecken zum Schliessen"

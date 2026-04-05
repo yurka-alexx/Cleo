@@ -6,7 +6,7 @@ from reportlab.lib.pagesizes import A4
 
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-_FONT_DIR = "/sessions/peaceful-pensive-lamport/fonts"
+_FONT_DIR = "/sessions/amazing-gallant-euler/fonts"
 pdfmetrics.registerFont(TTFont("Jakarta-Bold",    _FONT_DIR + "/PlusJakartaSans-Bold.ttf"))
 pdfmetrics.registerFont(TTFont("Jakarta",         _FONT_DIR + "/PlusJakartaSans-Regular.ttf"))
 pdfmetrics.registerFont(TTFont("Inter",           _FONT_DIR + "/Inter-Regular.ttf"))
@@ -699,24 +699,25 @@ def install_guide(c):
         y -= 8
 
     # ── BLOCK 1 ───────────────────────────────────────────────────────────
-    block("① Vorbereitung  (10 Min.)", DARK_BLUE, [
-        ("step", "Cleo herunterladen — Installer aus dem GitHub-Repo ausführen:"),
-        ("cmd",  "macOS:   bash install_mac.sh   →  Ordner ~/Cleo wird angelegt"),
-        ("cmd",  "Windows: install_windows.ps1 (Rechtsklick → Mit PowerShell ausführen)"),
-        ("step", "Claude Desktop herunterladen & installieren"),
+    block("① Vorbereitung & Installation  (10 Min.)", DARK_BLUE, [
+        ("step", "Installer-Skript vom Kunden ausführen lassen — öffnet Terminal automatisch:"),
+        ("cmd",  "macOS:   bash install_mac.sh"),
+        ("cmd",  "Windows: Rechtsklick auf install_windows.ps1 → Mit PowerShell ausführen"),
+        ("step", "Skript fragt nach Installationsordner (Standard: ~/Cleo) — Enter oder eigenen Pfad eingeben"),
+        ("step", "Skript prüft Claude Desktop automatisch — falls nicht installiert, Link wird angezeigt:"),
         ("url",  "https://claude.ai/download"),
+        ("step", "ZIP wird von GitHub heruntergeladen und entpackt — Ordner öffnet sich automatisch"),
         ("step", "Claude Pro-Abo prüfen: claude.ai → Account → Subscription"),
-        ("step", "Claude Desktop → Einstellungen → Ordner hinzufügen → Ordner '~/Cleo' wählen"),
-        ("warn", "Installer legt den Cleo-Ordner automatisch an — nichts manuell erstellen"),
-    ], note="Ohne aktives Pro-Abo läuft Cleo nicht")
+        ("step", "Claude Desktop → Einstellungen → Ordner hinzufügen → installierten Cleo-Ordner wählen"),
+        ("warn", "Kein .pkg, kein .exe nötig — nur das Bash-Skript. Legt alles automatisch an."),
+    ], note="Ohne aktives Claude Pro-Abo läuft Cleo nicht")
 
     # ── BLOCK 2 ───────────────────────────────────────────────────────────
     block("② E-Mail verbinden  (10–20 Min.)", MID_BLUE, [
-        ("step", "Gmail: Claude Desktop → Connectors → Gmail → verbinden"),
-        ("step", "IMAP/SMTP (z.B. Outlook, GMX, 1&1): Terminal öffnen, Skript ausführen:"),
-        ("cmd",  "bash <(curl -sL https://raw.githubusercontent.com/yurka-alexx/Cleo/main/imap-smtp-mcp/install_mac.sh)"),
-        ("warn", "Windows: PowerShell als Admin → irm [Repo-URL]/install_windows.ps1 | iex"),
-        ("step", "Bereithalten: IMAP-Server, Port (993), Benutzername, App-Passwort"),
+        ("step", "Gmail / Google Workspace: Claude Desktop → Connectors → Gmail → verbinden"),
+        ("step", "IMAP/SMTP (Outlook, GMX, Ionos, eigener Server): passiert automatisch in Phase 1 des Cleo-Flows"),
+        ("warn", "IMAP-Zugangsdaten bereithalten: Server, Port (993), Benutzername, App-Passwort"),
+        ("step", "Cleo fragt im Flow welches E-Mail-System — IMAP-MCP wird dann direkt installiert"),
         ("step", "Test nach Verbindung: 'Zeig mir meine letzten 5 Mails'"),
     ])
 
@@ -768,4 +769,4 @@ def build(out):
     cv.save()
     print("PDF erstellt: " + out)
 
-build("/sessions/peaceful-pensive-lamport/mnt/Cowork OS/Cleo-Mitarbeiter.pdf")
+build("/sessions/amazing-gallant-euler/cleo-repo/cleo/Cleo-Mitarbeiter.pdf")

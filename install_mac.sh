@@ -1,106 +1,150 @@
 #!/bin/bash
 # ============================================================
 #  Cleo — Installer für macOS
+#  Schritt 1 von 2: Dateien herunterladen und entpacken
 #
-#  Variante A (empfohlen): Skript + Cleo.zip im selben Ordner ablegen,
-#  dann ausführen. Kein Internet-Zugang nötig.
-#
-#  Variante B: GitHub-Token als Umgebungsvariable setzen:
-#  GH_TOKEN=ghp_xxx bash install_mac.sh
-#
-#  Bezugsquelle Cleo.zip: Erhalte die Datei von deinem
-#  Installationspartner (Able & Baker GmbH).
+#  Ausführen:  bash install_mac.sh
+#  Optionen:
+#    GH_TOKEN=ghp_... bash install_mac.sh   (privates Repo)
+#    CLEO_ZIP=/pfad/zu/Cleo.zip bash install_mac.sh
 # ============================================================
 
-set -e
+set -euo pipefail
 
-TARGET_DIR="$HOME/Cleo"
-REPO_URL="https://github.com/yurka-alexx/Cleo/archive/refs/heads/main.zip"
+REPO_OWNER="yurka-alexx"
+REPO_NAME="Cleo"
+BRANCH="main"
+REPO_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/${BRANCH}.zip"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TMP_DIR="$(mktemp -d)"
-ZIP_FILE="$TMP_DIR/cleo.zip"
 
+# ── Banner ───────────────────────────────────────────────────
+clear
 echo ""
-echo "╔══════════════════════════════════════╗"
-echo "║       Cleo — Installation (macOS)    ║"
-echo "╚══════════════════════════════════════╝"
+echo "  ╔══════════════════════════════════════════════╗"
+echo "  ║         Cleo — Installation (macOS)          ║"
+echo "  ║         Ihr digitales Sekretariat            ║"
+echo "  ╚══════════════════════════════════════════════╝"
 echo ""
 
-# ── Zielordner prüfen ────────────────────────────────────────
+# ── Zielordner festlegen ─────────────────────────────────────
+echo "  📂 Wo soll Cleo installiert werden?"
+echo "     [Enter] für Standard: ~/Cleo"
+echo ""
+read -p "  Verzeichnis: " USER_DIR
+USER_DIR="${USER_DIR:-$HOME/Cleo}"
+# Tilde expandieren
+USER_DIR="${USER_DIR/#\~/$HOME}"
+TARGET_DIR="$USER_DIR"
+echo ""
+echo "  ✔ Installationsordner: $TARGET_DIR"
+echo ""
+
+# ── Bestehenden Ordner prüfen ────────────────────────────────
 if [ -d "$TARGET_DIR" ]; then
-  echo "⚠️  Der Ordner '$TARGET_DIR' existiert bereits."
-  read -p "   Überschreiben? (j/n): " CONFIRM
+  echo "  ⚠️  Der Ordner existiert bereits."
+  read -p "  Überschreiben? (j/n): " CONFIRM
+  echo ""
   if [[ "$CONFIRM" != "j" && "$CONFIRM" != "J" ]]; then
-    echo "❌ Installation abgebrochen."
+    echo "  ❌ Installation abgebrochen."
     rm -rf "$TMP_DIR"
     exit 1
   fi
   rm -rf "$TARGET_DIR"
 fi
 
+# ── Claude Desktop prüfen ────────────────────────────────────
+CLAUDE_INSTALLED=false
+if [ -d "/Applications/Claude.app" ] || [ -d "$HOME/Applications/Claude.app" ]; then
+  CLAUDE_INSTALLED=true
+  echo "  ✔ Claude Desktop ist installiert."
+else
+  echo "  ⚠️  Claude Desktop nicht gefunden."
+  echo "  → Bitte jetzt installieren: https://claude.ai/download"
+  echo ""
+  echo "  Nach der Installation dieses Skript erneut ausführen"
+  echo "  oder mit Enter fortfahren, wenn Claude bereits läuft."
+  read -p "  Enter drücken zum Fortfahren... " _
+  echo ""
+fi
+
 # ── Quelle ermitteln ─────────────────────────────────────────
-LOCAL_ZIP=""
+ZIP_FILE="$TMP_DIR/cleo.zip"
+SOURCE_USED=""
 
-# Prüfen ob Cleo.zip neben dem Skript liegt
-for name in "Cleo.zip" "cleo.zip" "Cleo-main.zip" "cleo-main.zip"; do
-  if [ -f "$SCRIPT_DIR/$name" ]; then
-    LOCAL_ZIP="$SCRIPT_DIR/$name"
-    echo "📦 Lokale Datei gefunden: $LOCAL_ZIP"
-    break
-  fi
-done
+# Prio 1: Explizit per Umgebungsvariable
+if [ -n "${CLEO_ZIP:-}" ] && [ -f "$CLEO_ZIP" ]; then
+  cp "$CLEO_ZIP" "$ZIP_FILE"
+  SOURCE_USED="Lokale Datei: $CLEO_ZIP"
 
-# Prüfen ob Cleo.zip im Downloads-Ordner liegt
-if [ -z "$LOCAL_ZIP" ]; then
+# Prio 2: Cleo.zip neben dem Skript oder in ~/Downloads
+else
   for name in "Cleo.zip" "cleo.zip" "Cleo-main.zip" "cleo-main.zip"; do
-    if [ -f "$HOME/Downloads/$name" ]; then
-      LOCAL_ZIP="$HOME/Downloads/$name"
-      echo "📦 Lokale Datei gefunden: $LOCAL_ZIP"
-      break
-    fi
+    for search_dir in "$SCRIPT_DIR" "$HOME/Downloads" "$HOME/Desktop"; do
+      if [ -f "$search_dir/$name" ]; then
+        cp "$search_dir/$name" "$ZIP_FILE"
+        SOURCE_USED="Lokale Datei: $search_dir/$name"
+        break 2
+      fi
+    done
   done
 fi
 
-if [ -n "$LOCAL_ZIP" ]; then
-  # Variante A — lokale Datei
-  cp "$LOCAL_ZIP" "$ZIP_FILE"
-  echo "✅ Lokale Datei wird verwendet."
-
-elif [ -n "$GH_TOKEN" ]; then
-  # Variante B — GitHub mit Token
-  echo "⬇️  Lade Cleo von GitHub herunter (mit Token)..."
-  if ! curl -fsSL -H "Authorization: token $GH_TOKEN" "$REPO_URL" -o "$ZIP_FILE"; then
-    echo "❌ Download fehlgeschlagen. Token prüfen oder lokale Cleo.zip verwenden."
-    rm -rf "$TMP_DIR"
-    exit 1
+# Prio 3: GitHub (öffentlich — funktioniert wenn Repo public ist)
+if [ -z "$SOURCE_USED" ]; then
+  echo "  ⬇️  Lade Cleo von GitHub herunter..."
+  if curl -fsSL --max-time 30 "$REPO_URL" -o "$ZIP_FILE" 2>/dev/null; then
+    # Prüfen ob wir wirklich eine ZIP bekommen haben (nicht eine HTML-Fehlerseite)
+    if file "$ZIP_FILE" | grep -q "Zip archive"; then
+      SOURCE_USED="GitHub (öffentlich)"
+    else
+      rm -f "$ZIP_FILE"
+    fi
   fi
-  echo "✅ Download abgeschlossen."
+fi
 
-else
+# Prio 4: GitHub mit Token
+if [ -z "$SOURCE_USED" ] && [ -n "${GH_TOKEN:-}" ]; then
+  echo "  ⬇️  Lade Cleo von GitHub herunter (mit Token)..."
+  if curl -fsSL --max-time 60 -H "Authorization: token $GH_TOKEN" "$REPO_URL" -o "$ZIP_FILE"; then
+    if file "$ZIP_FILE" | grep -q "Zip archive"; then
+      SOURCE_USED="GitHub (Token)"
+    else
+      rm -f "$ZIP_FILE"
+      echo "  ❌ Token ungültig oder kein Zugriff auf das Repository."
+    fi
+  fi
+fi
+
+# Keine Quelle gefunden
+if [ -z "$SOURCE_USED" ]; then
   echo ""
-  echo "❌ Keine Installationsquelle gefunden."
+  echo "  ❌ Keine Installationsquelle gefunden."
   echo ""
-  echo "   Optionen:"
-  echo "   1. Lege 'Cleo.zip' neben dieses Skript oder in ~/Downloads"
-  echo "      → Datei erhältlich bei Able & Baker GmbH"
+  echo "  Optionen:"
+  echo "  1. Lege 'Cleo.zip' neben dieses Skript, in ~/Downloads oder ~/Desktop"
+  echo "     → Datei erhältlich bei Able & Baker GmbH"
   echo ""
-  echo "   2. Führe das Skript mit GitHub-Token aus:"
-  echo "      GH_TOKEN=ghp_... bash install_mac.sh"
+  echo "  2. GitHub-Token mitgeben:"
+  echo "     GH_TOKEN=ghp_... bash install_mac.sh"
   echo ""
   rm -rf "$TMP_DIR"
   exit 1
 fi
 
+echo "  ✔ Quelle: $SOURCE_USED"
+echo ""
+
 # ── Entpacken ────────────────────────────────────────────────
-echo "📦 Entpacke..."
+echo "  📦 Entpacke..."
 unzip -q "$ZIP_FILE" -d "$TMP_DIR"
 
-# cleo/-Unterordner finden (lokal oder aus GitHub-ZIP-Struktur)
+# cleo/-Unterordner finden
 EXTRACTED=$(find "$TMP_DIR" -maxdepth 3 -type d -name "cleo" | head -1)
 
 if [ -z "$EXTRACTED" ]; then
-  echo "❌ Fehler: cleo/-Unterordner nicht in der ZIP-Datei gefunden."
-  echo "   Bitte eine gültige Cleo.zip von deinem Installationspartner anfordern."
+  echo "  ❌ Fehler: cleo/-Unterordner nicht in der ZIP gefunden."
+  echo "     Bitte eine gültige Cleo.zip von Able & Baker anfordern."
   rm -rf "$TMP_DIR"
   exit 1
 fi
@@ -108,23 +152,26 @@ fi
 # ── Installieren ─────────────────────────────────────────────
 mkdir -p "$TARGET_DIR"
 cp -r "$EXTRACTED"/. "$TARGET_DIR/"
-echo "✅ Dateien nach '$TARGET_DIR' kopiert."
-
-# ── Aufräumen ────────────────────────────────────────────────
 rm -rf "$TMP_DIR"
 
+echo "  ✔ Dateien installiert."
+echo ""
+
 # ── Fertig ───────────────────────────────────────────────────
+echo "  ╔══════════════════════════════════════════════════════╗"
+echo "  ║  ✅  Cleo wurde erfolgreich installiert!             ║"
+echo "  ╠══════════════════════════════════════════════════════╣"
+echo "  ║                                                      ║"
+printf  "  ║  Speicherort: %-38s║\n" "$TARGET_DIR"
+echo "  ║                                                      ║"
+echo "  ║  Nächste Schritte:                                   ║"
+echo "  ║  1. Claude Desktop öffnen                            ║"
+printf  "  ║  2. Ordner öffnen: %-34s║\n" "$TARGET_DIR"
+echo "  ║  3. Cleo-Installation starten                        ║"
+echo "  ║     (Claude tippt automatisch die Anleitung)         ║"
+echo "  ║                                                      ║"
+echo "  ╚══════════════════════════════════════════════════════╝"
 echo ""
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║  ✅  Cleo wurde erfolgreich installiert!                 ║"
-echo "╠══════════════════════════════════════════════════════════╣"
-echo "║                                                          ║"
-echo "║  Speicherort:  ~/Cleo                                   ║"
-echo "║                                                          ║"
-echo "║  Nächste Schritte:                                       ║"
-echo "║  1. Claude Desktop öffnen                               ║"
-echo "║  2. Ordner ~/Cleo als Arbeitsordner auswählen           ║"
-echo "║  3. Cleo-Installation starten                           ║"
-echo "║                                                          ║"
-echo "╚══════════════════════════════════════════════════════════╝"
-echo ""
+
+# Ordner in Finder öffnen
+open "$TARGET_DIR" 2>/dev/null || true
