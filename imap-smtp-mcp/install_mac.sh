@@ -1,490 +1,175 @@
 #!/usr/bin/env bash
 # ============================================================
 #  IMAP-SMTP-MCP Installer — macOS
-#  Version: 1.3  |  Able & Baker GmbH
+#  Version: 2.0  |  Able & Baker GmbH
 #
 #  Verwendung:
-#    bash install_mac.sh \
-#      --host w01bf911.kasserver.com \
-#      --user user@example.com \
-#      --password "MeinPasswort" \
-#      [--imap-port 993] \
-#      [--smtp-port 587]
+#    bash install_mac.sh
+#    (ohne Argumente — vollständig interaktiv)
 #
-#  Ohne Argumente: interaktive Eingabe.
+#  Credentials werden NICHT in server.py gespeichert,
+#  sondern sicher in der Claude Desktop Config hinterlegt.
 # ============================================================
 
 set -euo pipefail
 
-# ── Farben ──────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 BLUE='\033[0;34m'; BOLD='\033[1m'; RESET='\033[0m'
 
-ok()   { echo -e "${GREEN}✅ $1${RESET}"; }
-info() { echo -e "${BLUE}ℹ️  $1${RESET}"; }
-warn() { echo -e "${YELLOW}⚠️  $1${RESET}"; }
-fail() { echo -e "${RED}❌ $1${RESET}"; exit 1; }
-step() { echo -e "\n${BOLD}── $1 ──────────────────────────────────${RESET}"; }
+ok()   { echo -e "${GREEN}✅  $1${RESET}"; }
+info() { echo -e "${BLUE}ℹ️   $1${RESET}"; }
+warn() { echo -e "${YELLOW}⚠️   $1${RESET}"; }
+fail() { echo -e "${RED}❌  $1${RESET}"; exit 1; }
+step() { echo -e "\n${BOLD}── $1${RESET}"; }
 
-# ── Parameter parsen ────────────────────────────────────────
-IMAP_HOST=""; MAIL_USER=""; MAIL_PASSWORD=""
-IMAP_PORT=993; SMTP_PORT=587
-
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --host)      IMAP_HOST="$2";     shift 2 ;;
-    --user)      MAIL_USER="$2";     shift 2 ;;
-    --password)  MAIL_PASSWORD="$2"; shift 2 ;;
-    --imap-port) IMAP_PORT="$2";     shift 2 ;;
-    --smtp-port) SMTP_PORT="$2";     shift 2 ;;
-    *) warn "Unbekannter Parameter: $1"; shift ;;
-  esac
-done
-
-# Interaktiv auffüllen falls fehlend
-if [[ -z "$IMAP_HOST" ]]; then
-  read -rp "IMAP/SMTP-Host (z.B. mail.example.com): " IMAP_HOST
-fi
-if [[ -z "$MAIL_USER" ]]; then
-  read -rp "E-Mail-Adresse / Benutzername: " MAIL_USER
-fi
-if [[ -z "$MAIL_PASSWORD" ]]; then
-  read -rsp "Passwort: " MAIL_PASSWORD; echo
-fi
-
-SMTP_HOST="$IMAP_HOST"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR="$HOME/mcp-servers/imap-smtp"
 CONFIG_FILE="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 
-echo -e "\n${BOLD}╔══════════════════════════════════════════╗"
-echo    "║   IMAP-SMTP-MCP Installer — macOS        ║"
-echo -e "╚══════════════════════════════════════════╝${RESET}"
-info "Host:     $IMAP_HOST"
-info "User:     $MAIL_USER"
-info "Zielort:  $TARGET_DIR"
+echo ""
+echo -e "${BOLD}╔══════════════════════════════════════════════════╗"
+echo    "║   IMAP-SMTP-MCP Installer — macOS           v2.0 ║"
+echo    "║   Able & Baker GmbH                              ║"
+echo -e "╚══════════════════════════════════════════════════╝${RESET}"
+echo ""
 
-# ── Schritt 1: uv sicherstellen ─────────────────────────────
-step "Schritt 1: uv prüfen"
-UV_PATH=$(command -v uv 2>/dev/null || echo "")
+# ── Schritt 1: Zugangsdaten abfragen ────────────────────────
+step "Schritt 1: Zugangsdaten"
+echo ""
+read -rp "  IMAP-Server    (z.B. mail.example.com): " IMAP_HOST
+read -rp "  SMTP-Server    [Enter = gleich wie IMAP]: " SMTP_HOST_INPUT
+SMTP_HOST="${SMTP_HOST_INPUT:-$IMAP_HOST}"
+read -rp "  IMAP-Port      [993]: " IMAP_PORT_INPUT
+IMAP_PORT="${IMAP_PORT_INPUT:-993}"
+read -rp "  SMTP-Port      [587]: " SMTP_PORT_INPUT
+SMTP_PORT="${SMTP_PORT_INPUT:-587}"
+echo ""
+read -rp "  E-Mail-Adresse: " MAIL_USER
+read -rsp "  Passwort:       " MAIL_PASSWORD
+echo ""
+
+info "Host:   $IMAP_HOST"
+info "SMTP:   $SMTP_HOST"
+info "User:   $MAIL_USER"
+
+# ── Schritt 2: uv sicherstellen ─────────────────────────────
+step "Schritt 2: uv prüfen"
+UV_PATH=$(command -v uv 2>/dev/null || true)
 if [[ -z "$UV_PATH" ]]; then
-  warn "uv nicht gefunden — wird jetzt installiert..."
+  warn "uv nicht gefunden — wird installiert..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
   export PATH="$HOME/.local/bin:$PATH"
   UV_PATH=$(command -v uv 2>/dev/null || echo "$HOME/.local/bin/uv")
-  [[ -x "$UV_PATH" ]] || fail "uv Installation fehlgeschlagen. Bitte manuell installieren: https://docs.astral.sh/uv/"
 fi
-ok "uv gefunden: $UV_PATH"
-
-# ── Schritt 2: Zielordner anlegen ───────────────────────────
-step "Schritt 2: Ordner anlegen"
-mkdir -p "$TARGET_DIR"
-ok "Ordner bereit: $TARGET_DIR"
+[[ -x "$UV_PATH" ]] || fail "uv nicht gefunden. Manuell: https://docs.astral.sh/uv/"
+ok "uv: $UV_PATH"
 
 # ── Schritt 3: IMAP-Verbindung testen + Ordner ermitteln ────
-step "Schritt 3: IMAP-Verbindung testen & Ordnernamen ermitteln"
+step "Schritt 3: IMAP-Verbindung testen & Ordner erkennen"
 
-FOLDER_INFO=$(python3 - <<PYEOF
+FOLDER_JSON=$(python3 - <<PYEOF
 import imaplib, ssl, json
-
-host     = "$IMAP_HOST"
-port     = $IMAP_PORT
-user     = "$MAIL_USER"
-password = "$MAIL_PASSWORD"
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode    = ssl.CERT_NONE
-
 try:
-    imap = imaplib.IMAP4_SSL(host, port, ssl_context=ctx)
-    imap.login(user, password)
+    imap = imaplib.IMAP4_SSL("${IMAP_HOST}", ${IMAP_PORT}, ssl_context=ctx)
+    imap.login("${MAIL_USER}", "${MAIL_PASSWORD}")
     _, raw_folders = imap.list()
     imap.logout()
-
     result = {"drafts": "Drafts", "trash": "Trash", "archive": "Archive"}
     for f in raw_folders:
         line = f.decode()
-        if r"\Drafts" in line:
-            result["drafts"] = line.split('"/"')[-1].strip().strip('"')
-        elif r"\Trash" in line:
-            result["trash"] = line.split('"/"')[-1].strip().strip('"')
-        elif r"\Archive" in line:
-            result["archive"] = line.split('"/"')[-1].strip().strip('"')
+        if r"\Drafts"  in line: result["drafts"]  = line.split('"/"')[-1].strip().strip('"')
+        if r"\Trash"   in line: result["trash"]   = line.split('"/"')[-1].strip().strip('"')
+        if r"\Archive" in line: result["archive"] = line.split('"/"')[-1].strip().strip('"')
     print(json.dumps(result))
 except Exception as e:
     print(json.dumps({"error": str(e), "drafts": "Drafts", "trash": "Trash", "archive": "Archive"}))
 PYEOF
 )
 
-FOLDER_DRAFTS=$(python3  -c "import json; print(json.loads('$FOLDER_INFO').get('drafts','Drafts'))"  2>/dev/null || echo "Drafts")
-FOLDER_TRASH=$(python3   -c "import json; print(json.loads('$FOLDER_INFO').get('trash','Trash'))"    2>/dev/null || echo "Trash")
-FOLDER_ARCHIVE=$(python3 -c "import json; print(json.loads('$FOLDER_INFO').get('archive','Archive'))" 2>/dev/null || echo "Archive")
+FOLDER_DRAFTS=$(python3  -c "import json,sys; d=json.loads(sys.argv[1]); print(d.get('drafts','Drafts'))"   "$FOLDER_JSON")
+FOLDER_TRASH=$(python3   -c "import json,sys; d=json.loads(sys.argv[1]); print(d.get('trash','Trash'))"     "$FOLDER_JSON")
+FOLDER_ARCHIVE=$(python3 -c "import json,sys; d=json.loads(sys.argv[1]); print(d.get('archive','Archive'))" "$FOLDER_JSON")
+HAS_ERROR=$(python3      -c "import json,sys; d=json.loads(sys.argv[1]); print(d.get('error',''))"          "$FOLDER_JSON")
+
+if [[ -n "$HAS_ERROR" ]]; then
+  fail "IMAP-Verbindung fehlgeschlagen: $HAS_ERROR\nZugangsdaten prüfen und erneut versuchen."
+fi
 
 ok "Verbindung erfolgreich"
 info "Entwürfe-Ordner : $FOLDER_DRAFTS"
-info "Papierkorb      : $FOLDER_TRASH"
-info "Archiv          : $FOLDER_ARCHIVE"
+info "Papierkorb-Ordner: $FOLDER_TRASH"
+info "Archiv-Ordner   : $FOLDER_ARCHIVE"
 
-# ── Schritt 4: server.py schreiben ──────────────────────────
-step "Schritt 4: server.py generieren (v1.3 — UID-safe)"
+# ── Schritt 4: server.py kopieren ───────────────────────────
+step "Schritt 4: server.py installieren"
+mkdir -p "$TARGET_DIR"
 
-cat > "$TARGET_DIR/server.py" << PYEOF
-#!/usr/bin/env python3
-# /// script
-# dependencies = ["mcp[cli]"]
-# ///
-"""
-IMAP/SMTP MCP Server
-Host: ${IMAP_HOST}
-User: ${MAIL_USER}
-Generated by install_mac.sh
-Version: 1.3 — UID-safe: alle IMAP-Operationen nutzen conn.uid() statt Sequenznummern
-"""
-
-import imaplib
-import smtplib
-import ssl
-import email
-import json
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.header import decode_header
-from datetime import datetime, timedelta, timezone
-
-from mcp.server.fastmcp import FastMCP
-
-IMAP_HOST     = "${IMAP_HOST}"
-IMAP_PORT     = ${IMAP_PORT}
-SMTP_HOST     = "${SMTP_HOST}"
-SMTP_PORT     = ${SMTP_PORT}
-MAIL_USER     = "${MAIL_USER}"
-MAIL_PASSWORD = "${MAIL_PASSWORD}"
-
-FOLDER_INBOX   = "INBOX"
-FOLDER_DRAFTS  = "${FOLDER_DRAFTS}"
-FOLDER_TRASH   = "${FOLDER_TRASH}"
-FOLDER_ARCHIVE = "${FOLDER_ARCHIVE}"
-
-mcp = FastMCP("imap-smtp")
-
-
-def _imap_connect():
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    conn = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT, ssl_context=ctx)
-    conn.login(MAIL_USER, MAIL_PASSWORD)
-    return conn
-
-
-def _decode_header_str(raw):
-    if raw is None:
-        return ""
-    parts = decode_header(raw)
-    decoded = []
-    for part, enc in parts:
-        if isinstance(part, bytes):
-            decoded.append(part.decode(enc or "utf-8", errors="replace"))
-        else:
-            decoded.append(str(part))
-    return " ".join(decoded)
-
-
-def _parse_message(raw_bytes):
-    msg = email.message_from_bytes(raw_bytes)
-    body = ""
-    if msg.is_multipart():
-        for part in msg.walk():
-            if part.get_content_type() == "text/plain" and not part.get("Content-Disposition"):
-                payload = part.get_payload(decode=True)
-                if payload:
-                    body = payload.decode(part.get_content_charset() or "utf-8", errors="replace")
-                    break
-    else:
-        payload = msg.get_payload(decode=True)
-        if payload:
-            body = payload.decode(msg.get_content_charset() or "utf-8", errors="replace")
-    return {
-        "from":    _decode_header_str(msg.get("From")),
-        "to":      _decode_header_str(msg.get("To")),
-        "subject": _decode_header_str(msg.get("Subject")),
-        "date":    msg.get("Date", ""),
-        "body":    body[:4000],
-    }
-
-
-@mcp.tool()
-def fetch_recent_mails(folder: str = "INBOX", hours: int = 24) -> str:
-    """Fetch mails received in the last N hours. Returns stable IMAP UIDs."""
-    conn = _imap_connect()
-    try:
-        conn.select(folder, readonly=True)
-        since = (datetime.utcnow() - timedelta(hours=hours)).strftime("%d-%b-%Y")
-        _, data = conn.uid("SEARCH", None, f'(SINCE "{since}")')
-        uids = data[0].split()
-        results = []
-        for uid in uids[-50:]:
-            _, raw = conn.uid("FETCH", uid, "(RFC822)")
-            if raw and raw[0]:
-                parsed = _parse_message(raw[0][1])
-                parsed["uid"] = uid.decode()
-                results.append(parsed)
-        return json.dumps(results, ensure_ascii=False, indent=2)
-    finally:
-        conn.logout()
-
-
-@mcp.tool()
-def search_mails(folder: str = "INBOX", from_addr: str = "", subject: str = "",
-                 unread_only: bool = False, since_days: int = 30) -> str:
-    """Search mails by sender, subject, unread flag, and date range."""
-    conn = _imap_connect()
-    try:
-        conn.select(folder, readonly=True)
-        criteria = []
-        since = (datetime.utcnow() - timedelta(days=since_days)).strftime("%d-%b-%Y")
-        criteria.append(f'SINCE "{since}"')
-        if from_addr: criteria.append(f'FROM "{from_addr}"')
-        if subject:   criteria.append(f'SUBJECT "{subject}"')
-        if unread_only: criteria.append("UNSEEN")
-        query = "(" + " ".join(criteria) + ")"
-        _, data = conn.uid("SEARCH", None, query)
-        uids = data[0].split()
-        results = []
-        for uid in uids[-50:]:
-            _, raw = conn.uid("FETCH", uid, "(RFC822)")
-            if raw and raw[0]:
-                parsed = _parse_message(raw[0][1])
-                parsed["uid"] = uid.decode()
-                results.append(parsed)
-        return json.dumps(results, ensure_ascii=False, indent=2)
-    finally:
-        conn.logout()
-
-
-@mcp.tool()
-def get_mail(uid: str, folder: str = "INBOX") -> str:
-    """Fetch a single mail by UID with full body."""
-    conn = _imap_connect()
-    try:
-        conn.select(folder, readonly=True)
-        _, raw = conn.uid("FETCH", uid.encode(), "(RFC822)")
-        if not raw or not raw[0]:
-            return json.dumps({"error": "Mail not found"})
-        parsed = _parse_message(raw[0][1])
-        parsed["uid"] = uid
-        return json.dumps(parsed, ensure_ascii=False, indent=2)
-    finally:
-        conn.logout()
-
-
-@mcp.tool()
-def create_draft(to: str, subject: str, text: str, cc: str = "") -> str:
-    """Create a draft email in the Drafts folder."""
-    conn = _imap_connect()
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["From"]    = MAIL_USER
-        msg["To"]      = to
-        msg["Subject"] = subject
-        if cc: msg["Cc"] = cc
-        msg.attach(MIMEText(text, "plain", "utf-8"))
-        result = conn.append(FOLDER_DRAFTS, "", imaplib.Time2Internaldate(datetime.now(tz=timezone.utc)), msg.as_bytes())
-        return json.dumps({"status": "ok", "result": str(result)})
-    finally:
-        conn.logout()
-
-
-@mcp.tool()
-def send_mail(to: str, subject: str, text: str, cc: str = "") -> str:
-    """Send an email via SMTP (STARTTLS on port 587)."""
-    msg = MIMEMultipart("alternative")
-    msg["From"]    = MAIL_USER
-    msg["To"]      = to
-    msg["Subject"] = subject
-    if cc: msg["Cc"] = cc
-    msg.attach(MIMEText(text, "plain", "utf-8"))
-    recipients = [to] + ([cc] if cc else [])
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
-        smtp.ehlo(); smtp.starttls(context=ctx)
-        smtp.login(MAIL_USER, MAIL_PASSWORD)
-        smtp.sendmail(MAIL_USER, recipients, msg.as_string())
-    return json.dumps({"status": "sent", "to": to, "subject": subject})
-
-
-@mcp.tool()
-def archive_mail(uid: str, folder: str = "INBOX") -> str:
-    """Move a mail to the Archive folder. Uses stable IMAP UIDs."""
-    conn = _imap_connect()
-    try:
-        conn.select(folder)
-        result = conn.uid("COPY", uid.encode(), FOLDER_ARCHIVE)
-        if result[0] == "OK":
-            conn.uid("STORE", uid.encode(), "+FLAGS", "\\\\Deleted")
-            conn.expunge()
-            return json.dumps({"status": "archived", "uid": uid})
-        return json.dumps({"status": "error", "detail": str(result)})
-    finally:
-        conn.logout()
-
-
-@mcp.tool()
-def delete_mail(uid: str, folder: str = "INBOX", permanent: bool = False) -> str:
-    """Delete a mail. permanent=False moves to Trash. Uses stable IMAP UIDs."""
-    conn = _imap_connect()
-    try:
-        conn.select(folder)
-        if permanent:
-            conn.uid("STORE", uid.encode(), "+FLAGS", "\\\\Deleted")
-            conn.expunge()
-            return json.dumps({"status": "deleted_permanently", "uid": uid})
-        result = conn.uid("COPY", uid.encode(), FOLDER_TRASH)
-        if result[0] == "OK":
-            conn.uid("STORE", uid.encode(), "+FLAGS", "\\\\Deleted")
-            conn.expunge()
-            return json.dumps({"status": "moved_to_trash", "uid": uid})
-        return json.dumps({"status": "error", "detail": str(result)})
-    finally:
-        conn.logout()
-
-
-@mcp.tool()
-def mark_mail(uid: str, action: str, folder: str = "INBOX") -> str:
-    """Mark a mail. action: read, unread, flag, unflag. Uses stable IMAP UIDs."""
-    conn = _imap_connect()
-    try:
-        conn.select(folder)
-        action_map = {
-            "read":   ("+FLAGS", "\\\\Seen"),
-            "unread": ("-FLAGS", "\\\\Seen"),
-            "flag":   ("+FLAGS", "\\\\Flagged"),
-            "unflag": ("-FLAGS", "\\\\Flagged"),
-        }
-        if action not in action_map:
-            return json.dumps({"error": f"Unknown action: {action}. Use: read, unread, flag, unflag"})
-        op, flag = action_map[action]
-        conn.uid("STORE", uid.encode(), op, flag)
-        return json.dumps({"status": "ok", "uid": uid, "action": action})
-    finally:
-        conn.logout()
-
-
-@mcp.tool()
-def create_folder(name: str) -> str:
-    """Create a new IMAP folder (top-level or nested with '/' separator). Idempotent."""
-    conn = _imap_connect()
-    try:
-        result = conn.create(name)
-        if result[0] == "OK":
-            return json.dumps({"status": "created", "folder": name})
-        detail = str(result)
-        if "ALREADYEXISTS" in detail.upper() or "already exists" in detail.lower():
-            return json.dumps({"status": "already_exists", "folder": name})
-        return json.dumps({"status": "error", "detail": detail})
-    finally:
-        conn.logout()
-
-
-@mcp.tool()
-def move_to_folder(uid: str, target_folder: str, source_folder: str = "INBOX") -> str:
-    """Move a mail to any target folder. Creates folder if needed. Uses stable IMAP UIDs."""
-    conn = _imap_connect()
-    try:
-        conn.create(target_folder)
-        conn.select(source_folder)
-        result = conn.uid("COPY", uid.encode(), target_folder)
-        if result[0] == "OK":
-            conn.uid("STORE", uid.encode(), "+FLAGS", "\\\\Deleted")
-            conn.expunge()
-            return json.dumps({"status": "moved", "uid": uid, "from": source_folder, "to": target_folder})
-        return json.dumps({"status": "error", "detail": str(result)})
-    finally:
-        conn.logout()
-
-
-@mcp.tool()
-def save_to_folder(folder: str, subject: str, text: str, sender_name: str = "Cleo") -> str:
-    """Save a message directly into any IMAP folder via APPEND. Saved as UNREAD."""
-    conn = _imap_connect()
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["From"]    = f"{sender_name} <{MAIL_USER}>"
-        msg["To"]      = MAIL_USER
-        msg["Subject"] = subject
-        msg.attach(MIMEText(text, "plain", "utf-8"))
-        result = conn.append(
-            folder,
-            "",
-            imaplib.Time2Internaldate(datetime.now(tz=timezone.utc)),
-            msg.as_bytes()
-        )
-        if result[0] == "OK":
-            return json.dumps({"status": "saved", "folder": folder, "subject": subject})
-        return json.dumps({"status": "error", "detail": str(result)})
-    finally:
-        conn.logout()
-
-
-if __name__ == "__main__":
-    mcp.run()
-PYEOF
-
-ok "server.py geschrieben: $TARGET_DIR/server.py"
-
-# ── Schritt 5: claude_desktop_config.json patchen ───────────
-step "Schritt 5: Claude Desktop Config patchen"
-
-CONFIG_DIR="$HOME/Library/Application Support/Claude"
-mkdir -p "$CONFIG_DIR"
-
-if [[ -f "$CONFIG_FILE" ]]; then
-  if python3 -c "import json,sys; d=json.loads(open('$CONFIG_FILE').read()); sys.exit(0 if 'mcpServers' in d else 1)" 2>/dev/null; then
-    python3 - "$CONFIG_FILE" "$UV_PATH" "$TARGET_DIR/server.py" << 'PYEOF'
-import json, sys
-path, uv, srv = sys.argv[1], sys.argv[2], sys.argv[3]
-with open(path) as f:
-    d = json.load(f)
-d["mcpServers"]["imap-smtp"] = {"command": uv, "args": ["run", "--python", "3.12", "--with", "mcp[cli]", srv]}
-with open(path, "w") as f:
-    json.dump(d, f, indent=2, ensure_ascii=False)
-PYEOF
-    ok "imap-smtp zu bestehendem mcpServers hinzugefügt"
-  else
-    python3 - "$CONFIG_FILE" "$UV_PATH" "$TARGET_DIR/server.py" << 'PYEOF'
-import json, sys
-path, uv, srv = sys.argv[1], sys.argv[2], sys.argv[3]
-with open(path) as f:
-    d = json.load(f)
-d["mcpServers"] = {"imap-smtp": {"command": uv, "args": ["run", "--python", "3.12", "--with", "mcp[cli]", srv]}}
-with open(path, "w") as f:
-    json.dump(d, f, indent=2, ensure_ascii=False)
-PYEOF
-    ok "mcpServers-Block zur Config hinzugefügt"
-  fi
-else
-  python3 - "$CONFIG_FILE" "$UV_PATH" "$TARGET_DIR/server.py" << 'PYEOF'
-import json, sys
-path, uv, srv = sys.argv[1], sys.argv[2], sys.argv[3]
-d = {"mcpServers": {"imap-smtp": {"command": uv, "args": ["run", "--python", "3.12", "--with", "mcp[cli]", srv]}}}
-with open(path, "w") as f:
-    json.dump(d, f, indent=2, ensure_ascii=False)
-PYEOF
-  ok "Neue Config erstellt"
+SERVER_SRC="$SCRIPT_DIR/server.py"
+if [[ ! -f "$SERVER_SRC" ]]; then
+  fail "server.py nicht gefunden in $SCRIPT_DIR\nBitte das gesamte imap-smtp-mcp-Verzeichnis herunterladen."
 fi
+cp "$SERVER_SRC" "$TARGET_DIR/server.py"
+ok "server.py → $TARGET_DIR/server.py"
+
+# ── Schritt 5: Claude Desktop Config schreiben ──────────────
+step "Schritt 5: Claude Desktop Config konfigurieren"
+mkdir -p "$(dirname "$CONFIG_FILE")"
+
+# Backup
+[[ -f "$CONFIG_FILE" ]] && cp "$CONFIG_FILE" "${CONFIG_FILE}.backup" && info "Backup: ${CONFIG_FILE}.backup"
+
+python3 - <<PYEOF
+import json, os, sys
+
+config_path = os.path.expanduser("~/Library/Application Support/Claude/claude_desktop_config.json")
+config = {}
+if os.path.exists(config_path):
+    try:
+        with open(config_path) as f:
+            config = json.load(f)
+    except json.JSONDecodeError:
+        pass  # Backup wurde bereits erstellt
+
+if "mcpServers" not in config:
+    config["mcpServers"] = {}
+
+config["mcpServers"]["imap-smtp"] = {
+    "command": "${UV_PATH}",
+    "args": ["run", "--script", "${TARGET_DIR}/server.py"],
+    "env": {
+        "IMAP_HOST":      "${IMAP_HOST}",
+        "SMTP_HOST":      "${SMTP_HOST}",
+        "MAIL_USER":      "${MAIL_USER}",
+        "MAIL_PASSWORD":  "${MAIL_PASSWORD}",
+        "IMAP_PORT":      "${IMAP_PORT}",
+        "SMTP_PORT":      "${SMTP_PORT}",
+        "FOLDER_DRAFTS":  "${FOLDER_DRAFTS}",
+        "FOLDER_TRASH":   "${FOLDER_TRASH}",
+        "FOLDER_ARCHIVE": "${FOLDER_ARCHIVE}"
+    }
+}
+
+with open(config_path, "w") as f:
+    json.dump(config, f, indent=2, ensure_ascii=False)
+print("Config gespeichert.")
+PYEOF
 
 python3 -m json.tool "$CONFIG_FILE" > /dev/null && ok "JSON valide" || fail "Ungültiges JSON in der Config!"
+ok "Claude Desktop Config aktualisiert"
 
 # ── Fertig ───────────────────────────────────────────────────
 echo ""
-echo -e "${GREEN}${BOLD}╔══════════════════════════════════════════╗"
-echo    "║   Installation abgeschlossen! ✅          ║"
-echo -e "╚══════════════════════════════════════════╝${RESET}"
+echo -e "${GREEN}${BOLD}╔══════════════════════════════════════════════════╗"
+echo    "║   ✅  Installation abgeschlossen!                ║"
+echo    "║                                                  ║"
+echo    "║   → Claude Desktop neu starten (⌘Q → öffnen)    ║"
+echo    "║   → Dann: 'zeig mir die letzten Mails' testen   ║"
+echo -e "╚══════════════════════════════════════════════════╝${RESET}"
 echo ""
-info "Nächster Schritt: Claude Desktop neu starten (⌘Q → neu öffnen)"
-info "Dann: Cowork öffnen und 'zeig mir die letzten Mails' testen"
+info "Credentials wurden sicher in der Claude Config gespeichert."
+info "server.py enthält KEINE Passwörter."
 echo ""
-warn "Sicherheitshinweis: server.py enthält das Passwort im Klartext."
-warn "Zugriff einschränken: chmod 600 $TARGET_DIR/server.py"
