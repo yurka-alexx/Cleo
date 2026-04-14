@@ -363,8 +363,8 @@ def mark_mail(uid: str, action: str, folder: str = "INBOX") -> str:
     try:
         conn.select(folder)
         action_map = {
-            "read":   ("+FLAGS", "\\\\Seen"),
-            "unread": ("-FLAGS", "\\\\Seen"),
+            "read":   ("+FLAGS", "",  # keine Flags = ungelesen),
+            "unread": ("-FLAGS", "",  # keine Flags = ungelesen),
             "flag":   ("+FLAGS", "\\\\Flagged"),
             "unflag": ("-FLAGS", "\\\\Flagged"),
         }
