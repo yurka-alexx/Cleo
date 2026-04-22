@@ -1,7 +1,7 @@
 # Cleo — Produktdokumentation
 
 > Letzte Aktualisierung: April 2026
-> Version: 1.3.0
+> Version: 1.4.0
 > Installationspartner: Able & Baker GmbH · Yuri A. Bilogor
 
 ---
@@ -17,10 +17,11 @@
    - 4.3 [Physischer Briefversand (OB24)](#43-physischer-briefversand-ob24)
    - 4.4 [CRM-Sync](#44-crm-sync)
    - 4.5 [KI-Rechtsassistent](#45-firmenanwalt)
+   - 4.6 [WhatsApp-Kanal](#46-whatsapp-kanal)
 5. [Autonomie-Level](#5-autonomie-level)
 6. [Konfigurationsvariablen](#6-konfigurationsvariablen)
 7. [MCP-Integrationen](#7-mcp-integrationen)
-8. [Installationsflow (Phasen 0–10)](#8-installationsflow-phasen-010)
+8. [Installationsflow (Phasen 0–13)](#8-installationsflow-phasen-013)
 9. [Ordnerstruktur nach Installation](#9-ordnerstruktur-nach-installation)
 10. [Tägliche Nutzung](#10-tägliche-nutzung)
 11. [Troubleshooting](#11-troubleshooting)
@@ -40,6 +41,7 @@ Der Nutzer spricht mit dem System in normaler Sprache — keine Programmierkennt
 - **Physischer Briefversand**: Briefe per API an OB24 übergeben — digital versenden, physisch ankommen
 - **CRM**: Kontakte automatisch aus dem Postfach aufbauen und pflegen
 - **Juristische Recherche**: KI-gestützter Recherche- und Verwaltungsassistent für Rechtsfragen (kein Rechtsanwalt-Ersatz)
+- **WhatsApp-Kanal**: Cleo ist per WhatsApp erreichbar — Sprachnachrichten, Textnachrichten, Bilder
 
 ### Kernversprechen
 
@@ -68,10 +70,14 @@ Cleo ist kein eigenständiges Softwareprodukt, sondern ein **Konfigurationssyste
 ├─────────────────────────────────────────────────────┤
 │   MCP-Server (Model Context Protocol)                │
 │   ├── imap-smtp / Gmail / Outlook  ←  E-Mail        │
-│   ├── Google Calendar / Outlook    ←  Kalender       │
+│   ├── Google Calendar / Outlook    ←  Kalender      │
 │   ├── Pocket AI                    ←  Transkripte   │
 │   ├── Notion / Markdown            ←  Aufgaben      │
 │   └── OB24 (via Bash/curl)         ←  Briefe        │
+├─────────────────────────────────────────────────────┤
+│   Claude Code CLI (optional, für WhatsApp)           │
+│   ├── WhatsApp-Plugin (Linked Device)               │
+│   └── imap-smtp MCP (in Claude Code registriert)    │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -83,12 +89,11 @@ Jedes Modul ist als `SKILL.md`-Datei im Cowork-Ordner des Kunden gespeichert. Di
 - **Ablaufanweisungen** für Claude (welche Tools aufzurufen sind, in welcher Reihenfolge)
 - **Entscheidungslogik** (z.B. Autonomie-Level-Auswertung)
 
-Die SKILL.md-Dateien sind plain-text Markdown — vollständig einsehbar, editierbar und versionierbar.
-
 ### Gedächtnissystem
 
 - **CLAUDE.md**: Dauerhafte Konfiguration, Firmendaten, Mini-CRM, Rollenidentität des Assistenten
 - **MEMORY.md**: Sitzungsübergreifendes Gedächtnis — wird nur auf explizite Nutzeranweisung beschrieben
+- **cleo-memory.md** (WhatsApp): Langzeitgedächtnis für den WhatsApp-Kanal — sessionübergreifend
 
 ---
 
@@ -109,12 +114,17 @@ Die SKILL.md-Dateien sind plain-text Markdown — vollständig einsehbar, editie
 | Dienst | Zweck | Kosten/Monat | Pflicht? |
 |---|---|---|---|
 | [Claude Desktop](https://claude.ai/download) | Cowork-Modus (KI-Engine) | 20–25 EUR | ✅ Pflicht |
+| [Claude Code CLI](https://claude.ai/download) | WhatsApp-Kanal | kostenlos | Für WhatsApp |
+| [Bun](https://bun.sh) | JavaScript-Runtime für WhatsApp-Plugin | kostenlos | Für WhatsApp |
+| OpenAI API Key | Sprachtranskription via Whisper API | ~0–2 EUR/Monat | Für WhatsApp |
 | [Pocket AI](https://pocket.ai) | Gesprächsaufzeichnung + Transkript | ~10 EUR | Für Meeting-Review |
 | [OnlineBrief24](https://www.onlinebrief24.de) | Physischer Briefversand per API | ~1,20–2,50 EUR/Brief | Optional |
 | Google Workspace / Gmail | E-Mail + Kalender | 6 EUR/User | Falls Gmail |
 | Notion | Aufgaben-Datenbank | 10–15 EUR | Optional |
 
-> ⚠️ **OB24-Konto**: Muss **vor der Installation** angelegt werden. Registrierung unter [onlinebrief24.de](https://www.onlinebrief24.de) (kostenlos, Pay-per-use). Nach Registrierung: Login → API-Zugangsdaten notieren.
+> ⚠️ **OB24-Konto**: Muss **vor der Installation** angelegt werden. Registrierung unter [onlinebrief24.de](https://www.onlinebrief24.de) (kostenlos, Pay-per-use).
+
+> ⚠️ **RAM-Hinweis für WhatsApp**: Auf Macs mit 16 GB RAM keine lokale Whisper-Installation verwenden. Stattdessen OpenAI Whisper API nutzen (kein lokaler RAM-Verbrauch).
 
 ### Netzwerk & Berechtigungen
 
@@ -144,29 +154,14 @@ Die SKILL.md-Dateien sind plain-text Markdown — vollständig einsehbar, editie
 | 🗑️ | PAPIERKORB | Werbung, Newsletter, System-Benachrichtigungen | → Papierkorb |
 | 📁 | ARCHIVIEREN | Info-Mail, erledigt, kein Handlungsbedarf | → Archiv |
 | ✅ | ANTWORTEN | Direkte Frage, Anfrage, Kundenkommunikation | → Entwurf |
-| ✉️ | BRIEF | Formelles Schreiben nötig (Mahnung, Vertrag, Behörde, Schriftformpflicht) | → Brief-Vorschlag |
+| ✉️ | BRIEF | Formelles Schreiben nötig | → Brief-Vorschlag |
 | 📂 | VERSCHIEBEN | Gehört in Unterordner | → Ordner-Logik |
 | 👀 | BEOBACHTEN | Relevant, kein sofortiger Handlungsbedarf | → Markieren |
 
 4. **Entwürfe erstellen** (✅ ANTWORTEN): Ton professionell, im Stil der Firma
 5. **Brief-Vorschläge** (✉️ BRIEF): Briefinhalt vorbereiten, Nutzer bestätigt → OB24-Versand
-6. **Zusammenfassung**: Tabelle aller bearbeiteten Mails + Brief-Vorschlagsblock (falls vorhanden)
-7. **Mini-CRM automatisch aktualisieren** (Schritt 7 — immer, kein manueller crm-sync nötig):
-   - Neue Absender werden direkt eingetragen (Name, Firma, Rolle, Datum, Kontext)
-   - Bestehende Kontakte: „Letzter Kontakt" aktualisiert, Notizen bei neuem Kontext ergänzt
-   - Signaturblöcke werden ausgewertet: Telefon, Adresse, Titel fließen als Notizen ein
-   - Abschluss: `📇 Mini-CRM aktualisiert: +X neu · ↻Y aktualisiert · ✎Z angereichert`
-
-#### Spam-Erkennung (konservativ)
-
-Das System erkennt Spam anhand folgender Signale, handelt aber im Zweifelsfall als 👀 BEOBACHTEN:
-- Absender-Domain nicht im Mini-CRM und völlig unbekannt
-- Typische Spam-Phrasen (Gewinn, Erbschaft, Kreditangebot)
-- Keine persönliche Anrede
-- Vollständig bildbasierte Mail
-- SPF/DKIM-Fehler
-
-> ⚠️ Spam-Mails werden **nie permanent gelöscht** (`permanent=False`). Der Nutzer kann jederzeit im Papierkorb prüfen.
+6. **Zusammenfassung**: Tabelle aller bearbeiteten Mails
+7. **Mini-CRM automatisch aktualisieren**: Neue Absender eintragen, bestehende aktualisieren
 
 #### Konfigurationsvariablen
 
@@ -176,9 +171,7 @@ Das System erkennt Spam anhand folgender Signale, handelt aber im Zweifelsfall a
 | `INBOX_REVIEW_HOURS` | Zeitfenster für Review | `24` |
 | `INBOX_REVIEW_SCHEDULE` | Zeitplan | `täglich 08:00` |
 | `SUMMARY_CHANNEL` | Wohin die Zusammenfassung geht | `email:` / `slack:` / `none` |
-| `BRIEFING_FOLDER` | IMAP-Ordner für Briefings | `Morgen-Briefings` |
 | `AUTONOMOUS_ACTIONS` | Autonomie-Level | `1` / `2` / `3` |
-| `AUTO_NOTIFY_CONTACT` | Benachrichtigungskontakt informieren | `true` / `false` |
 
 ---
 
@@ -190,36 +183,13 @@ Das System erkennt Spam anhand folgender Signale, handelt aber im Zweifelsfall a
 
 #### Ablauf
 
-1. **Kalendertermine laden** (Google Calendar / Outlook): Alle Termine des heutigen Tages
-2. **Pocket-Tagestranskripte laden**: Alle Gespräche 00:00–23:59 Uhr via `search_pocket_conversations_timerange`
-3. **Matching**: Pocket-Gespräch → Kalendertermin bei zeitlicher Überlappung ≥ 5 Minuten. Nicht zuordbare Gespräche → „Ungeplantes Gespräch"
-4. **Zusammenfassung** je Gesprächstyp:
-   - 👤 Kundengespräch: Themen, Vereinbarungen, Next Steps, offene Fragen
-   - 🏢 Intern: Kurzzusammenfassung + To-Do-Liste
-   - 🎤 Ungeplant: Teilnehmer, Zusammenfassung, Next Steps
-5. **To-Dos anlegen** (bei Level 3): Notion-Datenbank oder Markdown-Checkliste
-6. **Kalendertermine anlegen** (bei Level 3): Follow-up-Termine aus vereinbarten Terminen
-7. **E-Mail-Entwürfe** (bei Level 2+): Meeting-Zusammenfassung an Kunden
-8. **Brief-Empfehlung** (immer): Erkennt ob ein formelles Schreiben nach dem Gespräch sinnvoller ist
-9. **Mini-CRM automatisch aktualisieren** (Schritt 7 — immer, auf Basis aller Gespräche des Tages):
-   - Neue Gesprächspartner aus Kalender + Pocket-Transkript werden direkt eingetragen
-   - Bestehende Kontakte: „Letzter Kontakt" aktualisiert, Gesprächskontext als Notiz ergänzt
-   - Beziehungstiefe aus Transkript: Angebot besprochen, Abschluss erzielt, offene Punkte, Interessensignale
-   - Rollenwechsel / Jobwechsel die im Gespräch erwähnt werden fließen sofort ein
-   - Abschluss: `📇 Mini-CRM aktualisiert: +X neu · ↻Y aktualisiert · ✎Z angereichert`
-10. **Tagesübersicht**: Tabelle mit Gespräch | Typ | Pocket | To-Dos | Termin | Entwurf | Brief
-
-#### Pocket-Integration
-
-Pocket AI zeichnet kontinuierlich alle Gespräche des Tages auf — unabhängig vom Kalender. Meeting-Review liest **alle** Pocket-Gespräche des Tages in einem Aufruf:
-
-```
-search_pocket_conversations_timerange(start_date="HEUTE 00:00", end_date="HEUTE 23:59")
-```
-
-Danach wird für jedes Gespräch:
-- Volles Transkript geladen: `get_pocket_conversation(id=...)`
-- Action Items geladen: `search_pocket_actionitems(conversation_id=...)`
+1. Kalendertermine laden (Google Calendar / Outlook)
+2. Pocket-Tagestranskripte laden (00:00–23:59 Uhr)
+3. Matching: Pocket-Gespräch → Kalendertermin
+4. Zusammenfassung je Gesprächstyp
+5. To-Dos anlegen (bei Level 3)
+6. E-Mail-Entwürfe erstellen (bei Level 2+)
+7. Mini-CRM automatisch aktualisieren
 
 ---
 
@@ -227,37 +197,16 @@ Danach wird für jedes Gespräch:
 
 **Datei:** `Sekretariat/skills/physischen-brief-versenden/SKILL.md`
 
-**Funktion:** Erstellt ein Brief-PDF nach DIN 5008 und versendet es via OnlineBrief24-API als physischen Brief.
+**Funktion:** Erstellt ein Brief-PDF nach DIN 5008 und versendet es via OnlineBrief24-API.
 
 #### Ablauf
 
-1. **Briefdaten erfassen**: Empfänger, Betreff, Brieftext, Brieftyp (Standard / Formelles Schreiben)
-2. **Brief-PDF generieren**: `build_brief.py` (liegt nach Installation in `Post-Requisiten/`)
-   - Ränder: Links/Rechts/Unten = 57pt, Oben = 80pt
-   - Briefkopf: Logo (oben rechts) + Firmendaten
-   - Empfängeradresse: DIN 5008-konform, 45mm vom oberen Rand
-   - Datum: rechtsbündig, Betreff: fett
-   - Grußformel: „Mit freundlichen Grüßen" + Signum-Bild
-3. **Preis abfragen** (OB24-API): Pflicht vor jedem Versand, Preis wird dem Nutzer angezeigt
-4. **Testmodus-Abfrage**:
-   - `OB24_TEST_MODE = true`: Brief wird simuliert, kein echter Versand, keine Kosten
-   - `OB24_TEST_MODE = false`: Claude fragt per Bestätigung: „Echt senden oder Testversand?"
-5. **Versand** (nach Bestätigung): Base64-kodiertes PDF an OB24-API → Tracking-ID zurück
-6. **Logging**: Eintrag in `Postausgang/log.md` mit Datum, Empfänger, Preis, Tracking-ID, Test J/N
-
-#### OB24-Credentials
-
-| Variable | Beschreibung |
-|---|---|
-| `OB24_USERNAME` | E-Mail-Adresse des OB24-Kontos |
-| `OB24_PASSWORD` | OB24-Kontopasswort |
-| `OB24_JOB_ID` | Briefprodukt-ID aus OB24-Dashboard (z.B. 1000 für Standardbrief SW) |
-| `OB24_TEST_MODE` | `true` = immer Testmodus, `false` = Echt (mit Rückfrage) |
-
-#### Brieftypen
-
-- **Standardbrief**: Firmenbriefkopf, normaler Abschluss
-- **Formelles Schreiben**: Zusätzlich Aktenzeichen im Briefkopf, Abschluss: „Rechtsabteilung, i.A. der Geschäftsführung, [Firma]"
+1. Briefdaten erfassen (Empfänger, Betreff, Text)
+2. Brief-PDF generieren via `build_brief.py`
+3. Preis abfragen (OB24-API) — immer vor Versand
+4. Testmodus- oder Echtversand-Abfrage
+5. Versand nach Bestätigung
+6. Logging in `Postausgang/log.md`
 
 ---
 
@@ -265,43 +214,7 @@ Danach wird für jedes Gespräch:
 
 **Datei:** `Sekretariat/skills/crm-sync/SKILL.md`
 
-**Funktion:** Liest das E-Mail-Postfach aus und füllt das Mini-CRM in `Sekretariat/CLAUDE.md` mit Kontakten.
-
-#### Ablauf
-
-1. E-Mail-Postfach der letzten N Tage durchsuchen (Standard: 180 Tage)
-2. Absender-Domains klassifizieren (intern vs. extern)
-3. Top-Kontakte extrahieren: Name, Firma, E-Mail, letzter Kontakt, Kontext
-4. Mini-CRM-Tabelle in `Sekretariat/CLAUDE.md` aktualisieren
-5. Optional: Neue Kontakte in externes CRM (HubSpot, Salesforce, Pipedrive, Close.io) übertragen
-
-#### Mini-CRM-Format
-
-```markdown
-| Name | Firma | E-Mail | Rolle | Letzter Kontakt | Notizen |
-|---|---|---|---|---|---|
-| Max Mustermann | Muster GmbH | max@muster.de | Kunde | 2026-03-15 | Angebot ausstehend |
-```
-
-Das Mini-CRM ist die **Single Source of Truth** für alle Skills. Inbox-Review, Meeting-Review und Brief-Versand lesen Kontaktdaten immer frisch aus dieser Tabelle.
-
-#### Kontinuierliches Lernen
-
-Das Mini-CRM wächst und verbessert sich automatisch mit jeder Interaktion — **ohne manuellen crm-sync-Aufruf**:
-
-| Quelle | Was wird gelernt |
-|---|---|
-| Inbox-Review (täglich) | Neue Absender, Letzter Kontakt, Telefon/Adresse aus Signaturen, Rollenzuordnung |
-| Meeting-Review (täglich) | Neue Gesprächspartner, Gesprächskontext, Angebote/Abschlüsse, Jobwechsel |
-| CRM-Sync (initial + auf Abruf) | Initialbefüllung aus 180 Tagen Postfach, Abgleich mit externem CRM |
-
-Nach jedem Review wird eine Zusammenfassung der CRM-Änderungen ausgegeben:
-```
-📇 Mini-CRM aktualisiert:
-  + [X] neue Kontakte eingetragen
-  ↻ [Y] bestehende Kontakte aktualisiert
-  ✎ [Z] Kontakte mit neuen Infos angereichert
-```
+**Funktion:** Befüllt das Mini-CRM initial aus dem E-Mail-Postfach (180 Tage). Inbox-Review und Meeting-Review aktualisieren das CRM danach automatisch nach jedem Durchlauf.
 
 ---
 
@@ -311,59 +224,55 @@ Nach jedem Review wird eine Zusammenfassung der CRM-Änderungen ausgegeben:
 
 **Funktion:** KI-gestützter Recherche- und Verwaltungsassistent für rechtliche Themen.
 
-> ⚠️ **Wichtiger Haftungsausschluss**: Der KI-Rechtsassistent ist **kein zugelassener Rechtsanwalt** und ersetzt keinen. Er dient der Recherche, Strukturierung und Verwaltung von Rechtsvorgängen — nicht der Rechtsberatung im Sinne des RDG (Rechtsdienstleistungsgesetz). Bei jedem Thema mit rechtlicher Tragweite endet jede Antwort mit dem Hinweis: *„Bitte vor verbindlichen Schritten mit einem zugelassenen Rechtsanwalt abstimmen."*
+> ⚠️ Kein Ersatz für einen zugelassenen Rechtsanwalt. Jede Antwort endet mit dem Hinweis zur anwaltlichen Abstimmung.
 
-#### Fähigkeiten (KI-Assistent, kein Anwalt)
+---
 
-- Rechtliche Sachverhalte strukturieren und zusammenfassen
-- Relevante Gesetze und Urteile recherchieren (BGB, HGB, UStG, DSGVO, UWG, VOB u.a.)
-- Vertragsentwürfe als **Arbeitsdokument** vorbereiten
-- Schriftverkehr und Fallakten in `Team/Rechtsassistent/Fallarchiv/` organisieren
-- Auf mögliche rechtliche Risiken hinweisen (proaktiv, unaufgefordert)
+### 4.6 WhatsApp-Kanal
 
-#### Aktenführung
+Cleo ist über WhatsApp per Linked-Device-Protokoll erreichbar — direkt auf der Kundennummer, ohne separate SIM oder zweite App.
 
+#### Wie es funktioniert
+
+Das WhatsApp-Plugin (Claude Code) verbindet sich als verknüpftes Gerät mit der bestehenden WhatsApp-Nummer. Eingehende Nachrichten werden an die Claude-Code-Session weitergeleitet, Cleo antwortet direkt.
+
+#### Fähigkeiten
+
+- **Textnachrichten**: Fragen beantworten, Aufgaben erledigen, Infos aus dem Cowork-Workspace liefern
+- **Sprachnachrichten**: Automatische Transkription via OpenAI Whisper API (kein lokaler RAM-Verbrauch)
+- **Bilder**: Fotos werden empfangen und direkt verarbeitet
+- **Ausgehende Nachrichten**: Cleo kann proaktiv Nachrichten senden (z.B. an eine Liste von Kontakten)
+- **E-Mail-Zugriff via WhatsApp**: Wenn imap-smtp in Claude Code registriert ist, kann Cleo den Posteingang auf Anfrage prüfen
+
+#### Sicherheit & Zugriffskontrolle
+
+- **Allowlist**: Nur vorher freigegebene Nummern erreichen Cleo
+- **Neue Kontakte**: Werden via Pairing-Code zugefügt (Cleo sendet Code, Nutzer bestätigt)
+- **Session-Persistenz**: Auth gespeichert in `~/.whatsapp-channel/.baileys_auth/` — Handy muss nicht eingeschaltet sein
+
+#### Starten
+
+```bash
+claude --dangerously-skip-permissions --dangerously-load-development-channels plugin:whatsapp@whatsapp-claude-plugin
 ```
-Fallarchiv/
-└── 2026-001-VERTR/       ← Aktenzeichen: Jahr-Nr-Kürzel
-    ├── Sachverhalt.md
-    ├── Dokumente/
-    └── Korrespondenz/
-```
 
-#### Rechtsgebiete
+Nach dem Start einmalig `/whatsapp:status` eingeben, damit Cleo aktiv auf Nachrichten wartet.
 
-Werden während der Installation automatisch aus dem E-Mail-Postfach (180 Tage) abgeleitet und in `Team/Rechtsassistent/CLAUDE.md` eingetragen. Typische Rechtsgebiete je Branche:
+#### Langzeitgedächtnis
 
-| Branche | Häufige Rechtsgebiete |
-|---|---|
-| Marketing/Agentur | Urheberrecht, Wettbewerbsrecht, DSGVO, Dienstleistungsrecht |
-| Handwerk | Werkvertragsrecht, VOB, Baurecht, Gewährleistung |
-| IT | Softwarelizenzrecht, Datenschutz, Haftungsrecht, SLA |
-| Immobilien | Mietrecht, Kaufvertragsrecht, WEG-Recht, Maklerrecht |
+Cleo liest beim Start jeder Session `~/.whatsapp-channel/cleo-memory.md` — persistente Erinnerungen über Sessions hinweg. Neue Einträge entstehen auf expliziten Wunsch des Nutzers.
 
 ---
 
 ## 5. Autonomie-Level
 
-Das Autonomie-Level ist die **zentrale Konfigurationsentscheidung** der Installation. Es bestimmt, wie eigenständig Cleo in allen Modulen handelt.
+Das Autonomie-Level bestimmt, wie eigenständig Cleo in allen Modulen handelt.
 
 | Level | Name | Was passiert automatisch |
 |---|---|---|
-| **Level 1** | Beobachter | Nur analysieren und zusammenfassen — alle Aktionen werden vorgeschlagen, der Nutzer entscheidet |
-| **Level 2** | Assistent | Level 1 + automatisch E-Mail-Entwürfe erstellen (Nutzer sendet selbst) |
+| **Level 1** | Beobachter | Nur analysieren und zusammenfassen — alle Aktionen werden vorgeschlagen |
+| **Level 2** | Assistent | Level 1 + automatisch E-Mail-Entwürfe erstellen |
 | **Level 3** | Autopilot | Level 2 + Kalendertermine anlegen, To-Dos anlegen, Benachrichtigungskontakt informieren |
-
-### Variablen je Level
-
-| Variable | Level 1 | Level 2 | Level 3 |
-|---|---|---|---|
-| `AUTO_CREATE_DRAFTS` | `false` | **`true`** | `true` |
-| `AUTO_CREATE_EVENTS` | `false` | `false` | **`true`** |
-| `AUTO_CREATE_TODOS` | `false` | `false` | **`true`** |
-| `AUTO_NOTIFY_CONTACT` | `false` | `false` | **`true`** |
-
-Das Level kann jederzeit durch Änderung der Variablen in den jeweiligen SKILL.md-Dateien angepasst werden.
 
 ---
 
@@ -382,92 +291,54 @@ Das Level kann jederzeit durch Änderung der Variablen in den jeweiligen SKILL.m
 | `ASSISTENT_NAME` | Name des Assistenten (z.B. „Clara", „Max") |
 | `ASSISTENT_GESCHLECHT` | `weiblich` / `männlich` / `neutral` |
 | `BENACHRICHTIGUNGS_NAME` | Name des Benachrichtigungskontakts |
-| `BENACHRICHTIGUNGS_POSITION` | Position (z.B. Geschäftsführer) |
 | `BENACHRICHTIGUNGS_EMAIL` | E-Mail des Benachrichtigungskontakts |
 
-### Inbox-Review/SKILL.md
-
-| Variable | Beschreibung | Standard |
-|---|---|---|
-| `INBOX_REVIEW_HOURS` | Zeitfenster in Stunden | `24` |
-| `INBOX_REVIEW_SCHEDULE` | Zeitplan | `täglich 08:00` |
-| `SUMMARY_CHANNEL` | Zusammenfassungskanal | `email:` |
-| `BRIEFING_FOLDER` | IMAP-Ordner für Briefings | `Morgen-Briefings` |
-| `AUTONOMOUS_ACTIONS` | Autonomie-Level | `1` |
-| `AUTO_NOTIFY_CONTACT` | Benachrichtigung senden | `false` |
-| `FOLDER_TRASH` | IMAP-Papierkorb-Ordner | `Trash` |
-
-### Meeting-Review/SKILL.md
-
-| Variable | Beschreibung | Standard |
-|---|---|---|
-| `CALENDAR_SYSTEM` | `google-kalender` / `outlook` | `google-kalender` |
-| `TASK_TOOL` | `notion` / `none` | `none` |
-| `EMAIL_SYSTEM` | E-Mail-System (wie global) | — |
-| `POCKET_ENABLED` | Pocket-Integration aktiv | `true` |
-| `SUMMARY_CHANNEL` | Zusammenfassungskanal | `email:` |
-| `AUTO_CREATE_EVENTS` | Termine automatisch anlegen | `false` |
-| `AUTO_CREATE_TODOS` | To-Dos automatisch anlegen | `false` |
-| `AUTO_CREATE_DRAFTS` | Entwürfe automatisch erstellen | `false` |
-
-### Brief-Versenden/SKILL.md
+### ~/CLAUDE.md (WhatsApp-Kanal)
 
 | Variable | Beschreibung |
 |---|---|
-| `OB24_USERNAME` | OB24 Benutzername (E-Mail) |
-| `OB24_PASSWORD` | OB24 Passwort |
-| `OB24_JOB_ID` | Briefprodukt-ID aus OB24-Dashboard |
-| `OB24_TEST_MODE` | `true` = Testmodus (kein echter Versand) |
+| Assistenten-Name | Name der WhatsApp-Instanz (z.B. Cleo) |
+| Workspace-Pfad | Absoluter Pfad zum Cowork-Ordner |
+| Mini-CRM-Pfad | Absoluter Pfad zur MINI-CRM.md |
+| Sprache | Antwortsprache (Standard: Sprache der eingehenden Nachricht) |
+| Fähigkeiten | Welche MCPs und Tools Cleo nutzen darf |
 
 ---
 
 ## 7. MCP-Integrationen
 
-Cleo nutzt folgende MCP-Server (Model Context Protocol):
+### Claude Desktop (Cowork-Modus)
 
 | MCP | Zweck | Installation |
 |---|---|---|
-| **imap-smtp-mcp** | Standard-E-Mail (IMAP/SMTP) | `npx mcp-remote [URL]` |
+| **imap-smtp-mcp** | Standard-E-Mail (IMAP/SMTP) | Installationsskript (Phase 1) |
 | **Gmail-Connector** | Google Gmail / Workspace | Claude Desktop → Connectors |
 | **Outlook-Connector** | Microsoft Office 365 | Claude Desktop → Connectors |
 | **Google Calendar** | Kalenderintegration | Claude Desktop → Connectors |
-| **Pocket AI** | Gesprächstranskripte | `npx mcp-remote https://mcp.pocket.ai` |
+| **Pocket AI** | Gesprächstranskripte | Claude Desktop → Connectors |
 | **Notion** | Aufgaben-Datenbank | Claude Desktop → Connectors |
 | **OB24** | Briefversand (via Bash/curl) | Keine MCP-Installation nötig |
 
-### Pocket AI — wichtige Details
+### Claude Code CLI (WhatsApp-Kanal)
 
-Pocket AI zeichnet **alle Gespräche des Tages** auf — nicht nur Kalender-Meetings. Meeting-Review nutzt:
+| MCP | Zweck | Installation |
+|---|---|---|
+| **WhatsApp-Plugin** | WhatsApp Linked Device | `claude --dangerously-load-development-channels plugin:whatsapp@whatsapp-claude-plugin` |
+| **imap-smtp** | E-Mail-Zugriff via WhatsApp | `claude mcp add imap-smtp ...` (Phase 12) |
 
-```
-search_pocket_conversations_timerange(start_date, end_date)
-get_pocket_conversation(id)
-search_pocket_actionitems(conversation_id)
-```
-
-Der `npx mcp-remote`-Eintrag wird in `claude_desktop_config.json` eingetragen:
-
-```json
-{
-  "mcpServers": {
-    "pocket": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://mcp.pocket.ai/mcp"],
-      "env": { "POCKET_API_KEY": "pk_..." }
-    }
-  }
-}
-```
+> **Hinweis:** Cloud-Konnektoren (Gmail, Calendar, Notion etc.) sind automatisch verfügbar, wenn der Nutzer in Claude Code mit demselben Account eingeloggt ist wie in Claude Desktop.
 
 ---
 
-## 8. Installationsflow (Phasen 0–10)
+## 8. Installationsflow (Phasen 0–13)
 
-Die vollständige Installation läuft über **einen einzigen Skill-Aufruf** in Claude Desktop:
+Die vollständige Basis-Installation läuft über **einen einzigen Skill-Aufruf** in Claude Desktop:
 
 > „Führe den Cleo Installationsflow aus."
 
-Gesamtdauer: ca. 2–4 Stunden | Alle Schritte geführt und interaktiv.
+Der WhatsApp-Kanal (Phasen 11–13) ist optional und wird im Anschluss eingerichtet.
+
+### Basis-Installation (Phasen 0–10)
 
 | Phase | Inhalt | Dauer |
 |---|---|---|
@@ -488,20 +359,63 @@ Gesamtdauer: ca. 2–4 Stunden | Alle Schritte geführt und interaktiv.
 | **8** | KI-Rechtsassistent einrichten (E-Mail-Scan 180 Tage) | 10 Min |
 | **9** | Mini-CRM vorbefüllen (Top-50 Kontakte aus Postfach) | 10–20 Min |
 | **10.1** | Installations-Checkliste abhaken | 5 Min |
-| **10.2** | Funktionstest E-Mail & CRM (Tests 1–3) | 10 Min |
-| **10.3** | Funktionstest Brief-Layout & OB24 (Tests 4–6, Testmodus) | 10 Min |
-| **10.4** | Funktionstest KI-Rechtsassistent (Tests 7–8) | 5 Min |
+| **10.2** | Funktionstest E-Mail & CRM | 10 Min |
+| **10.3** | Funktionstest Brief-Layout & OB24 (Testmodus) | 10 Min |
+| **10.4** | Funktionstest KI-Rechtsassistent | 5 Min |
 | **10.5** | Scheduled Tasks anlegen (Inbox-Review + Meeting-Review) | 5 Min |
 | **10.6** | Übergabenotiz UEBERGABE.md generieren | 5 Min |
 
-### OB24-Test (Phase 10.3)
+### WhatsApp-Kanal (Phasen 11–13, optional)
 
-Während der Installation ist `OB24_TEST_MODE = true` gesetzt. Der finale Test:
+| Phase | Inhalt | Dauer |
+|---|---|---|
+| **11.1** | Claude Code CLI prüfen / installieren | 5 Min |
+| **11.2** | Bun installieren (`curl -fsSL https://bun.sh/install \| bash`) | 3 Min |
+| **11.3** | WhatsApp-Plugin installieren und aktivieren | 5 Min |
+| **11.4** | WhatsApp-Gerät koppeln (Pairing-Code auf dem Handy eingeben) | 5 Min |
+| **11.5** | Allowlist einrichten — eigene Nummer zuerst | 3 Min |
+| **11.6** | Whisper-Transkription einrichten (OpenAI API, kein lokales Modell) | 10 Min |
+| **12.1** | imap-smtp in Claude Code registrieren (`claude mcp add imap-smtp ...`) | 5 Min |
+| **13.1** | System-Prompt für WhatsApp-Cleo generieren (interaktiv) | 10 Min |
+| **13.2** | `~/.whatsapp-channel/cleo-memory.md` anlegen | 2 Min |
+| **13.3** | Funktionstest: Textnachricht + Sprachnachricht senden | 5 Min |
 
-1. Brief-PDF generieren (Testbrief an Max Mustermann)
-2. OB24-Preis abfragen (kein echter Versand)
-3. Testversand bestätigen: Claude zeigt `„⚠️ Testmodus aktiv — kein echter Versand"`
-4. Nach erfolgreichem Test: `OB24_TEST_MODE` auf `false` setzen für echte Nutzung
+#### Phase 11.6 — Whisper-Transkription (OpenAI API)
+
+```bash
+# Python-Umgebung anlegen
+uv venv ~/whisper-env --python 3.12
+uv pip install mlx-whisper --python ~/whisper-env/bin/python3
+
+# Transkriptions-Script erstellen
+cat > ~/whisper-transcribe.sh << EOF
+#!/bin/bash
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+OPENAI_API_KEY="sk-..."   # Hier echten Key eintragen
+
+curl -s https://api.openai.com/v1/audio/transcriptions \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -F file="@$1" \
+  -F model="whisper-1" \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('text',''))"
+EOF
+chmod +x ~/whisper-transcribe.sh
+```
+
+#### Phase 13.1 — System-Prompt generieren
+
+Der System-Prompt (`~/CLAUDE.md`) wird interaktiv generiert. Folgende Angaben werden abgefragt:
+
+1. Name des Assistenten (z.B. Cleo, Clara, Max)
+2. Firmenname und Branche
+3. Absoluter Pfad zum Cowork-Ordner
+4. Absoluter Pfad zur MINI-CRM.md
+5. Sprache (Standard: Sprache der eingehenden Nachricht)
+6. Fähigkeiten: welche externen Tools darf Cleo eigenständig nutzen?
+7. Regel für externe Tools: immer erst fragen oder direkt handeln?
+
+Ausgabe: fertige `~/CLAUDE.md` mit allen Einstellungen.
 
 ---
 
@@ -513,77 +427,79 @@ Während der Installation ist `OB24_TEST_MODE = true` gesetzt. Der finale Test:
 ├── MEMORY.md                           ← Sitzungsübergreifendes Gedächtnis
 │
 ├── Sekretariat/
-│   ├── CLAUDE.md                       ← Identität, Firmendaten, Mini-CRM, Variablen
+│   ├── CLAUDE.md                       ← Identität, Firmendaten, Mini-CRM
 │   ├── MEMORY.md                       ← Sekretariats-Gedächtnis
 │   ├── Post-Requisiten/
-│   │   ├── logo.png                    ← Firmenlogo (nach Installation hochgeladen)
-│   │   ├── signum_[name].png           ← Unterschrift-Signum
-│   │   └── build_brief.py              ← Brief-PDF-Generator
+│   │   ├── logo.png
+│   │   ├── signum_[name].png
+│   │   └── build_brief.py
 │   ├── Postausgang/
-│   │   ├── [DATUM]-[KÜRZEL].pdf        ← Generierte Briefe
-│   │   ├── log.md                      ← Versand-Log (Datum, Empfänger, Preis, Tracking)
-│   │   └── fehler-log.md               ← OB24-Fehlerprotokoll
+│   │   ├── log.md
+│   │   └── fehler-log.md
 │   └── skills/
-│       ├── inbox-review/
-│       │   ├── SKILL.md                ← Konfiguriert mit Kundenvariablen
-│       │   └── ordner-logik/SKILL.md   ← Optional: E-Mail-Sortierlogik
+│       ├── inbox-review/SKILL.md
 │       ├── meeting-review/SKILL.md
 │       ├── crm-sync/SKILL.md
 │       └── physischen-brief-versenden/SKILL.md
 │
 └── Team/
     └── KI-Rechtsassistent/
-        ├── CLAUDE.md                   ← Juristischer Assistent (mit Haftungsausschluss)
+        ├── CLAUDE.md
         ├── MEMORY.md
         └── Fallarchiv/
-            └── [AKTENZEICHEN]/
-                ├── Sachverhalt.md
-                ├── Dokumente/
-                └── Korrespondenz/
+
+~/.whatsapp-channel/                    ← WhatsApp-Kanal (lokal auf dem Mac)
+├── .baileys_auth/                      ← WhatsApp-Session (nicht löschen!)
+├── .env                                ← Telefonnummer mit Ländervorwahl
+├── cleo-memory.md                      ← Langzeitgedächtnis (sessionübergreifend)
+└── inbox/                              ← Empfangene Fotos (automatisch)
+
+~/CLAUDE.md                             ← System-Prompt für Claude Code / WhatsApp-Kanal
+~/whisper-transcribe.sh                 ← Transkriptions-Script (OpenAI API)
+~/whisper-env/                          ← Python-Umgebung (Fallback, falls lokal gebraucht)
 ```
 
 ---
 
 ## 10. Tägliche Nutzung
 
-### Typischer Arbeitstag mit Cleo
+### Typischer Arbeitstag
 
-**Morgens (Level 2 / Level 3):**
+**Morgens:**
 ```
 „Geh durch meinen Posteingang."
-→ Claude klassifiziert alle Mails, erstellt Entwürfe, zeigt Brief-Vorschläge
-→ Morgen-Briefing geht automatisch an Benachrichtigungskontakt
+→ Cleo klassifiziert Mails, erstellt Entwürfe, zeigt Brief-Vorschläge
 ```
 
 **Nach Meetings:**
 ```
 „Mach die Meeting-Nachbereitung."
-→ Claude liest Kalender + Pocket-Transkripte, erstellt Zusammenfassungen
-→ To-Dos angelegt, Follow-up-Termine vorgeschlagen, Kunden-E-Mails als Entwurf
+→ Kalender + Pocket-Transkripte, Zusammenfassungen, To-Dos, Kunden-E-Mails
 ```
 
-**Brief versenden:**
+**Via WhatsApp (unterwegs):**
 ```
-„Schreib eine Mahnung an Müller GmbH, 500 EUR offen seit 30 Tagen."
-→ Claude erstellt Brief-PDF, fragt Preis bei OB24 ab, wartet auf Bestätigung, versendet
+„Was sind meine Termine heute?" [Sprachnachricht]
+→ Cleo transkribiert, liest Kalender, antwortet direkt auf WhatsApp
 ```
 
-**Rechtsfrage:**
+### WhatsApp starten
+
+```bash
+claude --dangerously-skip-permissions --dangerously-load-development-channels plugin:whatsapp@whatsapp-claude-plugin
 ```
-„Kann ich einen laufenden Dienstleistungsvertrag fristlos kündigen?"
-→ KI-Rechtsassistent recherchiert, strukturiert Sachverhalt, nennt relevante Paragrafen
-→ Immer mit Hinweis: „Bitte vor Schritten mit Rechtsanwalt abstimmen"
-```
+
+Nach dem Start: `/whatsapp:status` eingeben → Cleo ist aktiv.
 
 ### Shortcuts / Trigger-Phrasen
 
 | Aktion | Beispielaufruf |
 |---|---|
-| Inbox-Review starten | „Geh durch meine E-Mails" / „Posteingang aufräumen" |
-| Meeting-Nachbereitung | „Mach die Meeting-Nachbereitung" / „Was war heute" |
-| Brief versenden | „Schreib einen Brief an [Name]" / „brief versenden" |
-| CRM aktualisieren | „Sync das CRM" / „Neue Kontakte eintragen" |
-| Rechtsfrage stellen | Direkt in `Team/Rechtsassistent/` Subfolder öffnen |
+| Inbox-Review | „Geh durch meine E-Mails" |
+| Meeting-Nachbereitung | „Mach die Meeting-Nachbereitung" |
+| Brief versenden | „Schreib einen Brief an [Name]" |
+| CRM aktualisieren | „Sync das CRM" |
+| WhatsApp-Cleo starten | Befehl oben im Terminal |
 
 ---
 
@@ -593,13 +509,15 @@ Während der Installation ist `OB24_TEST_MODE = true` gesetzt. Der finale Test:
 |---|---|---|
 | E-Mails werden nicht geladen | IMAP-Verbindung unterbrochen | MCP-Server neu starten, Credentials prüfen |
 | Pocket-Transkripte fehlen | Pocket-App nicht aktiv | Pocket während Gesprächen aktiv lassen |
-| OB24-Versand schlägt fehl | Falscher Benutzername / Passwort / Job-ID | OB24-Dashboard prüfen, Testmodus aktivieren |
-| OB24-Saldo leer | Guthaben aufgebraucht | In OB24-Dashboard Guthaben aufladen |
+| OB24-Versand schlägt fehl | Falscher Benutzername / Passwort / Job-ID | OB24-Dashboard prüfen |
 | Kalender nicht erkannt | Google Calendar MCP nicht verbunden | Claude Desktop → Connectors → Google Calendar |
-| Brief-Layout stimmt nicht | Logo/Signum fehlt oder falsch | `Post-Requisiten/` prüfen, PNG neu hochladen |
 | CRM-Tabelle leer | Phase 9 noch nicht ausgeführt | CRM-Sync-Skill starten |
-| Spam-Mail fälschlich archiviert | Zu aggressiver Filter | In Papierkorb nachschauen (nie permanent gelöscht) |
-| Claude „vergisst" Kontext | Neue Session ohne MEMORY.md-Lesen | CLAUDE.md und MEMORY.md im Subfolder sicherstellen |
+| Claude „vergisst" Kontext | Neue Session ohne MEMORY.md-Lesen | CLAUDE.md und MEMORY.md im Subfolder prüfen |
+| WhatsApp: keine Nachrichten | Session nicht aktiviert | Nach Start: `/whatsapp:status` eingeben |
+| WhatsApp: Gerät getrennt | Session abgelaufen | `claude --dangerously-skip-permissions ...` neu starten, ggf. `/whatsapp:configure reset-auth` |
+| WhatsApp: Sprachnachricht nicht transkribiert | `~/whisper-transcribe.sh` fehlt oder OpenAI Key ungültig | Script prüfen, Key rotieren |
+| WhatsApp: hoher RAM-Verbrauch | Lokales Whisper-Modell geladen | Nur OpenAI API verwenden — kein lokales mlx-whisper |
+| WhatsApp: Umlaute falsch (ae/oe statt ä/ö) | Encoding-Problem im Brieftext | `~/CLAUDE.md` enthält Umlaut-Regel — Cleo neu starten |
 
 ---
 
@@ -615,7 +533,7 @@ Cleo kann über das BAFA-Programm **„Förderung unternehmerischen Know-hows"**
 | Max. förderfähige Kosten pro Vorhaben | 3.500 EUR netto | 3.500 EUR netto |
 | Max. Zuschuss pro Vorhaben | 1.750 EUR | **2.800 EUR** |
 
-*Ostdeutschland (neue Bundesländer): Brandenburg, Mecklenburg-Vorpommern, Sachsen, Sachsen-Anhalt, Thüringen
+*Ostdeutschland: Brandenburg, Mecklenburg-Vorpommern, Sachsen, Sachsen-Anhalt, Thüringen
 
 ### Rechenbeispiel — Neue Bundesländer (80%)
 
@@ -626,59 +544,47 @@ Cleo kann über das BAFA-Programm **„Förderung unternehmerischen Know-hows"**
 | BAFA-Zuschuss Phase 2 (80% von 3.500 EUR) | - 2.800 EUR |
 | **Ihre effektiven Kosten** | **1.400 EUR netto** |
 
-> ⚠️ Die Aufspaltung in 2 separate Vorhaben (z.B. Installation + Einweisung/Optimierung) muss mit dem BAFA-Berater abgestimmt werden. Able & Baker GmbH begleitet Sie durch den gesamten Antragsprozess.
-
-### Wichtige Regeln
-
-- Der Antrag **muss vor Beginn** der Leistung gestellt werden — rückwirkende Anträge sind nicht möglich
-- Voraussetzung: KMU gemäß EU-Definition (< 250 Mitarbeiter, < 50 Mio. EUR Umsatz) oder Freiberufler
-- Antrag läuft über einen BAFA-zugelassenen Berater (wird von Able & Baker GmbH gestellt)
-
-Weitere Informationen: [www.bafa.de](https://www.bafa.de) | Programm: Förderung unternehmerischen Know-hows
+> ⚠️ Antrag muss **vor Beginn** der Leistung gestellt werden. Able & Baker GmbH begleitet durch den gesamten Antragsprozess.
 
 ---
 
 ## 13. Changelog
 
+### v1.4.0 — April 2026
+- **NEU**: WhatsApp-Kanal (Modul 4.6) — Cleo per Linked Device erreichbar
+- **NEU**: Installationsphasen 11–13 für WhatsApp-Einrichtung
+- **NEU**: Sprachtranskription via OpenAI Whisper API (kein lokaler RAM-Verbrauch)
+- **NEU**: `~/CLAUDE.md` — System-Prompt für Claude Code / WhatsApp-Kanal
+- **NEU**: `~/.whatsapp-channel/cleo-memory.md` — sessionübergreifendes Gedächtnis
+- **NEU**: imap-smtp in Claude Code registrierbar (E-Mail-Zugriff via WhatsApp)
+- **NEU**: Interaktiver System-Prompt-Generator (Phase 13.1)
+- **UPDATE**: Voraussetzungen — Claude Code CLI, Bun, OpenAI API Key ergänzt
+- **UPDATE**: Ordnerstruktur — `~/.whatsapp-channel/` dokumentiert
+- **UPDATE**: Troubleshooting — WhatsApp-spezifische Einträge ergänzt
+
 ### v1.3.1 — April 2026
-- **NEU**: Kontinuierliches CRM-Lernen — inbox-review und meeting-review aktualisieren das Mini-CRM automatisch nach jedem Durchlauf (Schritt 7 in beiden Skills)
-  - Neue Kontakte werden direkt eingetragen, kein manueller crm-sync mehr nötig
-  - Signaturblöcke (Telefon, Adresse, Titel) werden aus E-Mails extrahiert
-  - Meeting-Transkripte liefern Beziehungskontext (Angebote, Abschlüsse, Rollenwechsel)
+- **NEU**: Kontinuierliches CRM-Lernen — inbox-review und meeting-review aktualisieren das Mini-CRM automatisch
+- **UPDATE**: Alle PDFs — Deutsche Umlaute durchgehend (ä, ö, ü, ß)
 
 ### v1.3.0 — April 2026
 - **NEU**: Assistenz-Identität — Name & Geschlecht in Installationsflow (Phase 0.2.5)
-- **NEU**: Kategorie `✉️ BRIEF` in Inbox-Review — physischer Brief als Antwort-Option
-- **NEU**: Brief-Empfehlungen in Meeting-Review-Zusammenfassung (neue Spalte „Brief")
-- **NEU**: OB24 Testmodus pro Versand wählbar (Session-Override unabhängig von Konfiguration)
-- **NEU**: KI-Rechtsassistent-Haftungsausschluss prominenter und umfassender
-- **FIX**: OB24-Credentials in Installation korrigiert (Username/Passwort statt API-Key)
-- **FIX**: OB24-Konto-Voraussetzung in Phase 0 + Mitarbeiter-PDF ergänzt
-- **FIX**: BAFA 80% auf korrekte Bundesländer eingeschränkt (Brandenburg, MV, Sachsen, SA, Thüringen)
-- **UPDATE**: Sales-PDF — BAFA Rechenbeispiel 7.000 EUR / 1.400 EUR Eigenanteil (Ost)
-- **UPDATE**: Sales-PDF — Able & Baker GmbH / Yuri A. Bilogor als Installationspartner
-- **UPDATE**: Alle PDFs — Deutsche Umlaute durchgehend (ä, ö, ü, ß)
+- **NEU**: Kategorie ✉️ BRIEF in Inbox-Review
+- **NEU**: KI-Rechtsassistent-Haftungsausschluss prominenter
+- **FIX**: OB24-Credentials in Installation korrigiert
 
 ### v1.2.0 — März 2026
-- **NEU**: Autonomie-Level 1/2/3 als zentrale Konfigurationsentscheidung (Phase 0.4)
-- **NEU**: Benachrichtigungskontakt (Phase 0.3) mit eigenem IMAP-Ordner
-- **NEU**: IMAP-Ordner automatisch anlegen (Morgen-Briefings, Meeting-Zusammenfassungen)
-- **NEU**: Spam-Kategorie explizit in Inbox-Review (konservativ, nie permanent löschen)
-- **NEU**: Scheduled Tasks am Ende der Installation (Phase 10.5)
-- **FIX**: Autonomie-Variablen werden zentral in Phase 5c in alle Skills übertragen
+- **NEU**: Autonomie-Level 1/2/3 als zentrale Konfigurationsentscheidung
+- **NEU**: Spam-Kategorie explizit in Inbox-Review
+- **NEU**: Scheduled Tasks am Ende der Installation
 
 ### v1.1.0 — März 2026
-- **NEU**: Pocket als Tagestranskript — alle Gespräche 00:00–23:59, nicht nur Meetings
-- **NEU**: Ungeplante Gespräche (in Pocket ohne Kalendereintrag) werden erkannt und verarbeitet
-- **NEU**: Autonome Aktionen-Variablen (AUTO_CREATE_EVENTS, AUTO_CREATE_TODOS, AUTO_CREATE_DRAFTS)
-- **NEU**: Inbox-Review: Alte Entwürfe (> 30 Tage) in Papierkorb (Schritt 0)
-- **NEU**: Mitarbeiter-PDF v2 mit Hardware/Abo-Kostenübersicht und BAFA-Info
+- **NEU**: Pocket als Tagestranskript
+- **NEU**: Ungeplante Gespräche werden erkannt und verarbeitet
 
 ### v1.0.0 — Februar 2026
 - Erster vollständiger Installationsflow (Phasen 0–10)
 - Inbox-Review, Meeting-Review, CRM-Sync, KI-Rechtsassistent
 - Physischer Briefversand via OB24-API
-- Mitarbeiter-Anleitung als PDF
 
 ---
 
