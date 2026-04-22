@@ -14,13 +14,23 @@ Gibt Claude direkten Zugriff auf ein E-Mail-Postfach via IMAP/SMTP.
 
 **macOS:**
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/yurka-alexx/Second-Brain-OS/main/imap-smtp-mcp/install_mac.sh)
+bash <(curl -sL https://raw.githubusercontent.com/yurka-alexx/Cleo/main/install_mac.sh)
 ```
 
 **Windows:**
 ```powershell
-irm https://raw.githubusercontent.com/yurka-alexx/Second-Brain-OS/main/imap-smtp-mcp/install_windows.ps1 | iex
+irm https://raw.githubusercontent.com/yurka-alexx/Cleo/main/install_windows.ps1 | iex
 ```
+
+---
+
+### WhatsApp-Kanal (Claude Code Plugin)
+
+Verbindet Claude als Cleo direkt mit WhatsApp — per Linked-Device-Protokoll. Cleo empfängt Nachrichten, transkribiert Sprachnachrichten (via OpenAI Whisper API) und antwortet eigenständig.
+
+**Voraussetzungen:** Claude Code CLI, Bun, OpenAI API Key
+
+Vollständige Einrichtung: [cleo/DOKUMENTATION.md → Phase 11–13](./cleo/DOKUMENTATION.md#8-installationsflow-phasen-013)
 
 ---
 
